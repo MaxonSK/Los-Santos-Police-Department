@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSPD | Oficiálna Prihláška</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; color: #00d4ff; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        input, textarea, select { 
+            width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; 
+            color: white; border-radius: 4px; box-sizing: border-box;
+        }
+        .section-divider { 
+            border-bottom: 2px solid #30363d; margin: 30px 0 20px 0; padding-bottom: 10px;
+            color: #8b949e; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body style="background: #0d1117; display: flex; justify-content: center; padding: 40px 20px;">
+
+    <div class="card" style="max-width: 800px; width: 100%;">
+        <h1 class="section-title" style="color: #00d4ff; text-align: center;">NÁBOROVÝ FORMULÁR LSPD</h1>
+        
+        <form id="lspd-form">
+            <div class="section-divider">I. Časť: In Character (IC)</div>
+            <div class="form-group">
+                <label>1. Jméno a příjmení</label>
+                <input type="text" id="ic_name" required>
+            </div>
+            <div class="form-group">
+                <label>2. Datum narození</label>
+                <input type="date" id="ic_dob" required>
+            </div>
+            <div class="form-group">
+                <label>3. Email a telefonní číslo</label>
+                <input type="text" id="ic_contact" required>
+            </div>
+            <div class="form-group">
+                <label>4. Vzdělání</label>
+                <input type="text" id="ic_edu" required>
+            </div>
+            <div class="form-group">
+                <label>5. Vlastníte licence? (Zbrojní, Vodičský...)</label>
+                <input type="text" id="ic_lic" required>
+            </div>
+            <div class="form-group">
+                <label>6. Něčo o sobě (rozepiš se)</label>
+                <textarea id="ic_about" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>7. Proč se zrovna k nám chceš připojit?</label>
+                <textarea id="ic_why" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>8. Jaká je vaše psychická odolnost?</label>
+                <input type="text" id="ic_mental" required>
+            </div>
+            <div class="form-group">
+                <label>9. Máte nějaké zdravotní potíže?</label>
+                <input type="text" id="ic_health" placeholder="Žiadne / vypísať...">
+            </div>
+            <div class="form-group">
+                <label>10. Co bys chtěl u nás dokázat?</label>
+                <input type="text" id="ic_goal" required>
+            </div>
+            <div class="form-group">
+                <label>11. Do jaké divize by ses chtěl dostat?</label>
+                <select id="ic_div">
+                    <option value="MBU">MBU</option>
+                    <option value="S.W.A.T.">S.W.A.T.</option>
+                    <option value="HSU">HSU</option>
+                    <option value="GND">GND</option>
+                    <option value="Detective Bureau">Detective Bureau</option>
+                    <option value="FTO">FTO</option>
+                </select>
+            </div>
+
+            <div class="section-divider">II. Časť: Out of Character (OOC)</div>
+            <div class="form-group">
+                <label>1. Discord Nick (napr. meno#0000)</label>
+                <input type="text" id="ooc_discord" required>
+            </div>
+            <div class="form-group">
+                <label>2. Věk (Skutočný)</label>
+                <input type="number" id="ooc_age" required>
+            </div>
+            <div class="form-group">
+                <label>3. Jsi na druhém charu v nelegálce?</label>
+                <input type="text" id="ooc_illegal" required>
+            </div>
+            <div class="form-group">
+                <label>4. Kolik máš odehraných hodin v RP?</label>
+                <input type="text" id="ooc_hours" required>
+            </div>
+
+            <button type="submit" class="btn-terminal" style="width: 100%; padding: 15px; margin-top: 20px;">
+                ODESLAT PŘIHLÁŠKU DO SYSTÉMU
+            </button>
+        </form>
+    </div>
+
+<script>
+    document.getElementById('lspd-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // 1. SEM VLOŽ SVOJU DISCORD WEBHOOK URL
+        const webhookURL = "https://discord.com/api/webhooks/1477314000567144598/x4GWHa1Dc-zcTsJYCF1iPWOfHoah2EvH9p73isyaZXIwPbAbvGZrNMxQOnkBXIQXc2yy";
+
+        // 2. Zhromaždenie všetkých údajov z formulára
+        const data = {
+            meno: document.getElementById('ic_name').value,
+            narodenie: document.getElementById('ic_dob').value,
+            kontakt: document.getElementById('ic_contact').value,
+            vzdelanie: document.getElementById('ic_edu').value,
+            licencie: document.getElementById('ic_lic').value,
+            o_sebe: document.getElementById('ic_about').value,
+            motivacia: document.getElementById('ic_why').value,
+            psychika: document.getElementById('ic_mental').value,
+            zdravie: document.getElementById('ic_health').value,
+            ciele: document.getElementById('ic_goal').value,
+            divizia: document.getElementById('ic_div').value,
+            discord: document.getElementById('ooc_discord').value,
+            vek: document.getElementById('ooc_age').value,
+            nelegalka: document.getElementById('ooc_illegal').value,
+            hodiny: document.getElementById('ooc_hours').value
+        };
+
+        // 3. Príprava správy pre Discord (Embed)
+        const payload = {
+            username: "LSPD Systém | Nová Prihláška",
+            avatar_url: "https://i.imgur.com/39pL9D2.png", // Môžeš zmeniť za vlastné logo
+            embeds: [{
+                title: "📄 NOVÁ ŽIADOSŤ O VSTUP DO LSPD",
+                color: 2123412, // Tmavomodrá farba
+                fields: [
+                    { name: "🟦 I. ČASŤ: IN CHARACTER (IC)", value: "--------------------------------------------------", inline: false },
+                    { name: "Meno a Priezvisko", value: data.meno, inline: true },
+                    { name: "Dátum narodenia", value: data.narodenie, inline: true },
+                    { name: "Kontakt", value: data.kontakt, inline: true },
+                    { name: "Vzdelanie", value: data.vzdelanie, inline: false },
+                    { name: "Licencie", value: data.licencie, inline: false },
+                    { name: "Něčo o sobě", value: data.o_sebe, inline: false },
+                    { name: "Prečo práve k nám?", value: data.motivacia, inline: false },
+                    { name: "Psychická odolnosť", value: data.psychika, inline: true },
+                    { name: "Zdravotné problémy", value: data.zdravie || "Žiadne", inline: true },
+                    { name: "Ciele v zbore", value: data.ciele, inline: false },
+                    { name: "Preferovaná divízia", value: `**${data.divizia}**`, inline: false },
+                    
+                    { name: "🟧 II. ČASŤ: OUT OF CHARACTER (OOC)", value: "--------------------------------------------------", inline: false },
+                    { name: "Discord Nick", value: data.discord, inline: true },
+                    { name: "Reálny Vek", value: data.vek, inline: true },
+                    { name: "Odehrané hodiny", value: data.hodiny, inline: true },
+                    { name: "Pôsobenie v nelegálke", value: data.nelegalka, inline: false }
+                ],
+                footer: { text: "Odoslané z LSPD Web Portálu • " + new Date().toLocaleString() }
+            }]
+        };
+
+        // 4. Odoslanie cez Fetch API
+        fetch(webhookURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            alert('Vaša prihláška bola úspešne doručená vedeniu LSPD!');
+            window.location.href = "nábory.html";
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Chyba pri odosielaní. Skontrolujte pripojenie.');
+        });
+    });
+</script>
+
+<script>
+    // 1. Efekt pri načítaní stránky (Fade In)
+    window.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('fade-in');
+    });
+
+    // 2. Efekt pri odchode zo stránky (Fade Out)
+    // Zachytí všetky kliknutia na odkazy
+    document.querySelectorAll('a, button').forEach(element => {
+        element.addEventListener('click', function(e) {
+            // Zistíme, kam odkaz smeruje (buď cez href alebo onclick)
+            let destination = this.href || (this.getAttribute('onclick') ? this.getAttribute('onclick').match(/'([^']+)'/)[1] : null);
+            
+            if (destination && !destination.startsWith('#')) {
+                e.preventDefault(); // Zastavíme okamžitý skok
+                document.body.style.opacity = '0'; // Stránka stmavne
+                
+                setTimeout(() => {
+                    window.location.href = destination; // Presmerujeme po animácii
+                }, 500); // Čas musí sedieť s transition v CSS (0.5s)
+            }
+        });
+    });
+</script>
+<script>
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('loader');
+        // Pridáme mierne oneskorenie (napr. 800ms), aby si užívateľ efekt všimol
+        setTimeout(() => {
+            loader.classList.add('hidden');
+        }, 800);
+    });
+</script>
+</body>
+<div id="loader">
+    <div class="terminal-loader">
+        <div class="spinner"></div>
+        <p>AUTENTIFIKÁCIA SYSTÉMU...</p>
+        <span class="status">PRIPÁJANIE K DATABÁZE LSPD...</span>
+    </div>
+</div>
+</html>

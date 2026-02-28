@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSPD | Los Santos Police Department</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav>
+    <div class="nav-container">
+        <a href="index.html" class="active">DOMOV</a>
+        <a href="nábory.html">NÁBORY</a>
+        <a href="patroly.html" id="nav-patroly" style="display: none;">PATROLY</a>
+        <a href="volacky.html" id="nav-volacky" style="display: none;">VOLAČKY</a>
+        <a href="#" onclick="alert('Prístup obmedzený.')">ZÁKONNÍK ↗</a>
+        
+        <div class="auth-box">
+            <button id="auth-trigger" class="btn-terminal" onclick="toggleAuth()">LOGIN</button>
+            <button id="logout-btn" class="btn-logout" style="display: none;" onclick="handleLogout()">ODHLÁSIŤ</button>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="hero-banner">
+        <h1 class="glow-text">LOS SANTOS POLICE DEPARTMENT</h1>
+        <p class="subtitle">„Obetavosť • Odvaha • Integrita“</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2 class="section-title">Odkaz od Chief of Police</h2>
+            <p>„Služba v Los Santos Police Department nie je len prácou, je to celoživotný záväzok voči občanom nášho mesta. Naším poslaním je byť štítom, ktorý stojí medzi poriadkom a chaosom. Každý deň vyrážame do ulíc s vedomím, že naša integrita a odvaha sú základnými piliermi bezpečnosti Los Santos. Naším cieľom nie je len represia, ale predovšetkým prevencia a budovanie dôvery s komunitou, ktorú chránime. Spoločne tvoríme bezpečnejšiu budúcnosť.“</p>
+        </div>
+
+        <h2 class="section-title">Špecializované divízie</h2>
+        <div class="division-grid">
+            <div class="division-card"><span>S.W.A.T.</span></div>
+            <div class="division-card"><span>F.T.O.</span></div>
+            <div class="division-card"><span>U.I.D.</span></div>
+            <div class="division-card"><span>G.N.D.</span></div>
+            <div class="division-card"><span>A.S.U.</span></div>
+            <div class="division-card"><span>M.B.U.</span></div>
+        </div>
+
+        <div class="card career-section">
+    <h3 class="accent-text">Kariéra v zbore</h3>
+    <p>Hľadáme nových kadetov. Služba v LSPD je poslaním.</p>
+    
+    <a href="nábory.html" style="text-decoration: none; display: inline-block;">
+        <button id="recruit-btn" class="btn-terminal recruit-special" data-text="VSTÚPIŤ DO AKADÉMIE">
+            VSTÚPIŤ DO AKADÉMIE
+        </button>
+    </a>
+</div>
+
+        <div class="card" style="margin-top: 40px;">
+            <h2 class="section-title">High Command Staff</h2>
+            <div class="leadership-list">
+                <div class="leader-row chief">
+                    <span class="rank-name">Chief of Police</span>
+                    <span class="stars">★★★★</span>
+                    <span class="officer-name">MATTHEW FOX</span>
+                </div>
+                <div class="leader-row asst-chief">
+                    <span class="rank-name">Assistant Chief</span>
+                    <span class="stars">★★★</span>
+                    <span class="officer-name">LUCAS BENNET</span>
+                </div>
+                <div class="leader-row deputy-chief">
+                    <span class="rank-name">Deputy Chief</span>
+                    <span class="stars">★★</span>
+                    <span class="officer-name">RAPHAEL ALMONTE</span>
+                </div>
+                <div class="leader-row commander">
+                    <span class="rank-name">Commander</span>
+                    <span class="stars">★</span>
+                    <span class="officer-name">ARTUR JAMES</span>
+                </div>
+            </div>
+        </div>
+
+
+</div>
+
+<div id="auth-modal" class="auth-overlay" style="display: none;">
+    <div class="auth-card">
+        <h2>POLICE TERMINAL</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Heslo">
+        <button class="btn-main" onclick="handleAuth()">VSTÚPIŤ</button>
+        <button class="btn-close" onclick="toggleAuth()">ZAVRIEŤ</button>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://epkhwacccjinygbkjzhl.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwa2h3YWNjY2ppbnlnYmtqemhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzUxOTksImV4cCI6MjA4Nzg1MTE5OX0.PUBY7Rdnm6x2267ujci60_WoMTMBC0ztGdwpDGXWI-g';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function toggleAuth() {
+        const m = document.getElementById('auth-modal');
+        m.style.display = (m.style.display === 'none') ? 'flex' : 'none';
+    }
+
+    async function handleAuth() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) alert(error.message); else location.reload();
+    }
+
+    async function handleLogout() {
+        await supabaseClient.auth.signOut();
+        location.reload();
+    }
+
+    async function checkUser() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user) {
+            document.getElementById('nav-patroly').style.display = 'inline-block';
+            document.getElementById('nav-volacky').style.display = 'inline-block';
+            document.getElementById('auth-trigger').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'block';
+        }
+    }
+    checkUser();
+</script>
+
+<script>
+    // 1. Efekt pri načítaní stránky (Fade In)
+    window.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('fade-in');
+    });
+
+    // 2. Efekt pri odchode zo stránky (Fade Out)
+    // Zachytí všetky kliknutia na odkazy
+    document.querySelectorAll('a, button').forEach(element => {
+        element.addEventListener('click', function(e) {
+            // Zistíme, kam odkaz smeruje (buď cez href alebo onclick)
+            let destination = this.href || (this.getAttribute('onclick') ? this.getAttribute('onclick').match(/'([^']+)'/)[1] : null);
+            
+            if (destination && !destination.startsWith('#')) {
+                e.preventDefault(); // Zastavíme okamžitý skok
+                document.body.style.opacity = '0'; // Stránka stmavne
+                
+                setTimeout(() => {
+                    window.location.href = destination; // Presmerujeme po animácii
+                }, 500); // Čas musí sedieť s transition v CSS (0.5s)
+            }
+        });
+    });
+</script>
+<script>
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('loader');
+        // Pridáme mierne oneskorenie (napr. 800ms), aby si užívateľ efekt všimol
+        setTimeout(() => {
+            loader.classList.add('hidden');
+        }, 800);
+    });
+</script>
+</body>
+<div id="loader">
+    <div class="terminal-loader">
+        <div class="spinner"></div>
+        <p>AUTENTIFIKÁCIA SYSTÉMU...</p>
+        <span class="status">PRIPÁJANIE K DATABÁZE LSPD...</span>
+    </div>
+</div>
+</html>
