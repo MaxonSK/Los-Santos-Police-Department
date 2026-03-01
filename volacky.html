@@ -20,6 +20,22 @@
         .nav-links a { color: #888; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
         .nav-links a.active { color: #00aaff; text-shadow: 0 0 10px rgba(0, 170, 255, 0.5); }
         .container { padding: 140px 20px 60px; max-width: 900px; margin: 0 auto; transition: 0.5s; }
+        
+        /* ŠTÝL PRE LEGENDU */
+        .legenda {
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        .legenda span b { color: #00aaff; }
+
         .volacky-card {
             background: rgba(13, 13, 13, 0.9); border-left: 5px solid #00aaff;
             padding: 30px; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
@@ -32,73 +48,44 @@
         .officer-name[contenteditable="true"]:focus { background: rgba(0, 170, 255, 0.1); color: #00aaff; border: 1px solid #00aaff; }
         .divider { text-align: center; color: #222; margin: 20px 0; font-weight: bold; letter-spacing: 3px; }
         
-        /* ŠTÝLY PRE EFEKTY */
         @keyframes modalShow {
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
         }
-
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-10px); }
             75% { transform: translateX(10px); }
         }
-
         @keyframes pulseAdmin {
             0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.4); }
             70% { box-shadow: 0 0 0 15px rgba(255, 204, 0, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
         }
-
         .overlay-page {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 5, 5, 0.9); display: none; justify-content: center; align-items: center; z-index: 2000; flex-direction: column;
             backdrop-filter: blur(8px);
         }
-
         .auth-box {
             background: #121826; border-radius: 25px; padding: 50px;
             width: 400px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.7);
             border: 1px solid rgba(255,255,255,0.05);
             animation: modalShow 0.3s ease-out forwards;
         }
-
-        .shake-anim {
-            animation: shake 0.2s ease-in-out 0s 2;
-        }
-
+        .shake-anim { animation: shake 0.2s ease-in-out 0s 2; }
         #adminPassField {
             width: 100%; background: #1a2235; border: none; padding: 18px;
             border-radius: 12px; color: white; text-align: center; font-size: 1.5rem;
             letter-spacing: 8px; margin-bottom: 30px; outline: none; box-sizing: border-box;
             transition: 0.3s; border: 1px solid transparent;
         }
-
-        #adminPassField:focus {
-            border-color: #00aaff;
-            background: #1e2941;
-        }
-
-        .btn-confirm { 
-            background: #ff4422; border: none; color: white; padding: 15px 40px; 
-            border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase;
-            transition: 0.3s;
-        }
+        #adminPassField:focus { border-color: #00aaff; background: #1e2941; }
+        .btn-confirm { background: #ff4422; border: none; color: white; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
         .btn-confirm:hover { transform: translateY(-2px); filter: brightness(1.2); }
-
-        .btn-save {
-            background: #00aaff; border: none; color: white; padding: 15px 40px; 
-            border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase;
-            transition: 0.3s;
-        }
+        .btn-save { background: #00aaff; border: none; color: white; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
         .btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 170, 255, 0.4); }
-
-        .btn-error {
-            background: #555; border: none; color: white; padding: 10px 30px; 
-            border-radius: 8px; font-weight: bold; cursor: pointer;
-            transition: 0.3s;
-        }
-
+        .btn-error { background: #555; border: none; color: white; padding: 10px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         #adminPanelTrigger {
             position: fixed; bottom: 30px; right: 30px; background: #ffcc00;
             color: black; border: none; padding: 15px 30px; border-radius: 50px;
@@ -107,7 +94,6 @@
             transition: 0.3s;
         }
         #adminPanelTrigger:hover { transform: scale(1.05); }
-
     </style>
 </head>
 <body>
@@ -123,7 +109,13 @@
     </nav>
 
     <div class="container" id="mainContent">
-        <h1 style="text-transform: uppercase; letter-spacing: 2px;">Volačky LSPD</h1>
+        <h1 style="text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Volačky LSPD</h1>
+        
+        <div class="legenda">
+            <span>DVAJA NA PATROLU: <b>ADAM</b></span>
+            <span>TRAJA NA PATROLE: <b>JUNIOR</b></span>
+        </div>
+
         <div class="volacky-card" id="mainCard">Načítavam systém...</div>
     </div>
 
@@ -170,26 +162,23 @@
             { type: "divider" },
             { id: "Charlie-1", tag: "#4080" }, { id: "Charlie-2", tag: "#4090" }, { id: "Charlie-3", tag: "#4100" }, { id: "Charlie-4", tag: "#4110" },
             { type: "divider" },
-            { id: "Oscar-1", tag: "#4120" }, { id: "Oscar-2", tag: "#4130" },
+            { id: "Lincoln-20", tag: "#4120" }, { id: "Lincoln-21", tag: "#4130" }, { id: "Lincoln-22", tag: "#4140" }, { id: "Lincoln-23", tag: "#4150" },
+            { id: "Lincoln-24", tag: "#4160" }, { id: "Lincoln-25", tag: "#4170" }, { id: "Lincoln-26", tag: "#4180" }, { id: "Lincoln-27", tag: "#4190" },
+            { id: "Lincoln-28", tag: "#4200" }, { id: "Lincoln-29", tag: "#4210" }, { id: "Lincoln-30", tag: "#4220" }, { id: "Lincoln-31", tag: "#4230" },
+            { id: "Lincoln-32", tag: "#4240" }, { id: "Lincoln-33", tag: "#4250" }, { id: "Lincoln-34", tag: "#4260" }, { id: "Lincoln-35", tag: "#4270" },
+            { id: "Lincoln-36", tag: "#4280" }, { id: "Lincoln-37", tag: "#4290" }, { id: "Lincoln-38", tag: "#4300" }, { id: "Lincoln-39", tag: "#4310" },
+            { id: "Lincoln-40", tag: "#4320" },
             { type: "divider" },
-            { id: "Lincoln-20", tag: "#4140" }, { id: "Lincoln-21", tag: "#4150" }, { id: "Lincoln-22", tag: "#4160" }, { id: "Lincoln-23", tag: "#4170" },
-            { id: "Lincoln-24", tag: "#4180" }, { id: "Lincoln-25", tag: "#4190" }, { id: "Lincoln-26", tag: "#4200" }, { id: "Lincoln-27", tag: "#4210" },
-            { id: "Lincoln-28", tag: "#4220" }, { id: "Lincoln-29", tag: "#4230" }, { id: "Lincoln-30", tag: "#4240" }, { id: "Lincoln-31", tag: "#4250" },
-            { id: "Lincoln-32", tag: "#4260" }, { id: "Lincoln-33", tag: "#4270" }, { id: "Lincoln-34", tag: "#4280" }, { id: "Lincoln-35", tag: "#4290" },
-            { id: "Lincoln-36", tag: "#4300" }, { id: "Lincoln-37", tag: "#4310" }, { id: "Lincoln-38", tag: "#4320" }, { id: "Lincoln-39", tag: "#4330" },
-            { id: "Lincoln-40", tag: "#4340" },
-            { type: "divider" },
-            { id: "TOM-1", tag: "#4350" }, { id: "TOM-2", tag: "#4360" }, { id: "TOM-3", tag: "#4570" }, { id: "TOM-4", tag: "#4580" },
-            { id: "TOM-5", tag: "#4590" }, { id: "TOM-6", tag: "#4600" }, { id: "TOM-7", tag: "#4610" }, { id: "TOM-8", tag: "#4620" },
-            { id: "TOM-9", tag: "#4630" }, { id: "TOM-10", tag: "#4640" }, { id: "TOM-11", tag: "#4650" }, { id: "TOM-12", tag: "#4660" },
-            { id: "TOM-13", tag: "#4670" }, { id: "TOM-14", tag: "#4680" }, { id: "TOM-15", tag: "#4690" }, { id: "TOM-16", tag: "#4700" },
-            { id: "TOM-17", tag: "#4710" }, { id: "TOM-18", tag: "#4720" }, { id: "TOM-19", tag: "#4730" }, { id: "TOM-20", tag: "#4740" }
+            { id: "TOM-1", tag: "#4330" }, { id: "TOM-2", tag: "#4340" }, { id: "TOM-3", tag: "#4350" }, { id: "TOM-4", tag: "#4360" },
+            { id: "TOM-5", tag: "#4370" }, { id: "TOM-6", tag: "#4380" }, { id: "TOM-7", tag: "#4490" }, { id: "TOM-8", tag: "#4400" },
+            { id: "TOM-9", tag: "#4410" }, { id: "TOM-10", tag: "#4420" }, { id: "TOM-11", tag: "#4430" }, { id: "TOM-12", tag: "#4440" },
+            { id: "TOM-13", tag: "#4450" }, { id: "TOM-14", tag: "#4460" }, { id: "TOM-15", tag: "#4470" }, { id: "TOM-16", tag: "#4480" },
+            { id: "TOM-17", tag: "#4490" }, { id: "TOM-18", tag: "#4500" }, { id: "TOM-19", tag: "#4510" }, { id: "TOM-20", tag: "#4520" }
         ];
 
         function renderTable() {
             const card = document.getElementById('mainCard');
             const savedData = JSON.parse(localStorage.getItem('lspd_volacky_data')) || {};
-            
             card.innerHTML = "";
             volackyStructure.forEach(item => {
                 if(item.type === "divider") { 
@@ -208,11 +197,7 @@
         }
 
         function toggleEditMode() {
-            if (canEdit) {
-                openSaveConfirm();
-            } else {
-                openAdminAuth();
-            }
+            if (canEdit) { openSaveConfirm(); } else { openAdminAuth(); }
         }
 
         function openAdminAuth() {
@@ -221,9 +206,7 @@
             document.getElementById('adminPassField').focus();
         }
 
-        function closeAdminAuth() {
-            document.getElementById('adminAuthPage').style.display = 'none';
-        }
+        function closeAdminAuth() { document.getElementById('adminAuthPage').style.display = 'none'; }
 
         function verifyCode() {
             if (document.getElementById('adminPassField').value === ADMIN_CODE) {
@@ -241,13 +224,8 @@
             }
         }
 
-        function openSaveConfirm() {
-            document.getElementById('saveConfirmPage').style.display = 'flex';
-        }
-
-        function closeSaveConfirm() {
-            document.getElementById('saveConfirmPage').style.display = 'none';
-        }
+        function openSaveConfirm() { document.getElementById('saveConfirmPage').style.display = 'flex'; }
+        function closeSaveConfirm() { document.getElementById('saveConfirmPage').style.display = 'none'; }
 
         function closeError() {
             document.getElementById('errorPage').style.display = 'none';
@@ -257,18 +235,14 @@
         function processSave() {
             const rows = document.querySelectorAll('.officer-name');
             const dataToSave = {};
-            
             rows.forEach(div => {
                 dataToSave[div.getAttribute('data-id')] = div.innerText.trim();
             });
-
             localStorage.setItem('lspd_volacky_data', JSON.stringify(dataToSave));
-            
             canEdit = false;
             document.getElementById('adminPanelTrigger').innerText = "AKTIVOVAŤ EDITÁCIU";
             document.getElementById('adminPanelTrigger').style.background = "#ffcc00";
             document.getElementById('adminPanelTrigger').style.animation = "pulseAdmin 2s infinite";
-            
             closeSaveConfirm();
             renderTable();
         }
