@@ -462,3 +462,117 @@ nav {
     50% { box-shadow: 0 0 20px rgba(46, 204, 113, 0.8); }
     100% { box-shadow: 0 0 5px rgba(46, 204, 113, 0.4); }
 } 
+
+/* --- SEKCE VOLAČKY --- */
+
+.volacky-container {
+    padding: 120px 20px 60px; /* Priestor pod fixným navbarom */
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.volacky-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.volacky-card {
+    background: #0f172a; /* Tmavomodré pozadie ako máš na obrázkoch */
+    border: 1px solid #1e293b;
+    border-left: 5px solid #00aaff; /* Výrazná LSPD modrá linka */
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.volacky-card:hover {
+    transform: translateY(-5px); /* Jemný efekt pri prejdení myšou */
+}
+
+.volacky-card h3 {
+    color: #00aaff;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 10px;
+}
+
+.volacky-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.volacky-list li {
+    padding: 10px 0;
+    color: #e2e8f0;
+    border-bottom: 1px solid #1e293b;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.volacky-list li:last-child {
+    border-bottom: none;
+}
+
+/* --- ADMIN / EDITOVACÍ REŽIM --- */
+
+.admin-btn {
+    background: transparent;
+    border: 2px solid #00aaff;
+    color: #00aaff;
+    padding: 8px 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+.admin-btn:hover {
+    background: #00aaff;
+    color: white;
+    box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+}
+
+.edit-mode {
+    background: #1e293b !important;
+    border: 2px dashed #00aaff !important;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: text;
+}
+
+/* --- PATROL INFO BOX (ADAM / JUNIOR) --- */
+
+.patrol-info-box {
+    margin-top: 60px;
+    background: linear-gradient(90deg, rgba(0, 170, 255, 0.1), rgba(0, 0, 0, 0));
+    border: 1px solid #00aaff;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.patrol-info-box h4 {
+    color: #00aaff;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.patrol-info-box p {
+    color: #cbd5e1;
+    line-height: 1.6;
+    font-size: 1.1rem;
+}
+
+.patrol-info-box strong {
+    color: #00e5ff; /* Svetlejšia modrá pre zvýraznenie ADAM/JUNIOR */
+}

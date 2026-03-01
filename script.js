@@ -68,7 +68,7 @@ setInterval(() => {
 
 // Konfigurácia Supabase (použi svoje údaje)
 const SUPABASE_URL = 'https://epkhwacccjinygbkjzhl.supabase.co';
-const SUPABASE_KEY = 'TU_DOPLN_SVOJ_ANON_KEY'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwa2h3YWNjY2ppbnlnYmtqemhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzUxOTksImV4cCI6MjA4Nzg1MTE5OX0.PUBY7Rdnm6x2267ujci60_WoMTMBC0ztGdwpDGXWI-g'; 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Funkcia na kontrolu prihlásenia
