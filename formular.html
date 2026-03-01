@@ -1,33 +1,193 @@
 <!DOCTYPE html>
-<html lang="sk">
-<head>
+<html lang="sk" style="background-color: #05070a;"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSPD | Oficiálna Prihláška</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .form-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; color: #00d4ff; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
-        input, textarea, select { 
-            width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; 
-            color: white; border-radius: 4px; box-sizing: border-box;
+        /* --- OPRAVA BIELEHO PREBLIKNUTIA --- */
+        html, body {
+            background: #05070a !important;
+            color: #fff;
+            margin: 0;
+            padding: 0;
         }
-        .section-divider { 
-            border-bottom: 2px solid #30363d; margin: 30px 0 20px 0; padding-bottom: 10px;
-            color: #8b949e; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;
+
+        /* --- NOVÉ EFEKTY PRE FORMULÁR --- */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 170, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 170, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Noise_Texture.png');
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .card {
+            background: rgba(10, 15, 20, 0.95) !important;
+            border: 1px solid #00aaff !important;
+            box-shadow: 0 0 30px rgba(0, 170, 255, 0.1), inset 0 0 15px rgba(0, 170, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            padding: 40px;
+            clip-path: polygon(0 0, 97% 0, 100% 3%, 100% 100%, 3% 100%, 0 97%);
+            margin-top: 20px;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 170, 255, 0.1), transparent 30%);
+            animation: radar-rotate 10s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes radar-rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- STYLING INPUTOV PODĽA SCREENSHOTU --- */
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 15, 15, 0.8) !important;
+            border: 1px solid rgba(0, 170, 255, 0.3) !important;
+            color: #fff !important;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            box-sizing: border-box;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            background: rgba(0, 170, 255, 0.05) !important;
+            border-color: #00aaff !important;
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.4);
+            outline: none;
+        }
+
+        select option {
+            background: #0a0f14;
+            color: #fff;
+        }
+
+        /* --- LOADER STYLING --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #05070a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            transition: opacity 0.5s;
+        }
+        #loader.hidden { opacity: 0; pointer-events: none; }
+
+        .terminal-loader {
+            text-align: center;
+            color: #00aaff;
+            font-family: monospace;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(0, 170, 255, 0.1);
+            border-top: 3px solid #00aaff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .btn-terminal {
+            background: transparent !important;
+            border: 1px solid #00aaff !important;
+            color: #00aaff !important;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 3px;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 2;
+            text-transform: uppercase;
+        }
+        .btn-terminal:hover {
+            background: #00aaff !important;
+            color: #000 !important;
+            box-shadow: 0 0 40px #00aaff;
+            transform: skew(-2deg);
+        }
+        .form-group { margin-bottom: 25px; text-align: left; position: relative; z-index: 1; }
+        label { display: block; color: #00aaff; margin-bottom: 8px; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
+        .section-divider { border-bottom: 1px solid #00aaff; margin: 40px 0 25px 0; padding-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 4px; font-size: 1rem; text-shadow: 0 0 10px #00aaff; }
+        
+        #success-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #00aaff;
+            font-family: monospace;
+        }
+        .progress-bar-fill { height: 100%; background: #00aaff; width: 0%; transition: width 2s ease-in-out; box-shadow: 0 0 15px #00aaff; }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+        @keyframes shake {
+            0%, 100% { transform: translate(0,0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
         }
     </style>
 </head>
-<body style="background: #0d1117; display: flex; justify-content: center; padding: 40px 20px;">
+<body style="display: flex; justify-content: center; padding: 40px 20px;">
+
+    <div id="loader">
+        <div class="terminal-loader">
+            <div class="spinner"></div>
+            <p>AUTENTIFIKÁCIA SYSTÉMU...</p>
+            <span class="status" style="font-size: 0.7rem; opacity: 0.6;">PRIPÁJANIE K DATABÁZE LSPD...</span>
+        </div>
+    </div>
+
+    <div id="success-overlay">
+        <div class="terminal-text" style="width: 80%; max-width: 600px; border-left: 2px solid #00aaff; padding-left: 20px;">
+            <p>> INICIALIZUJEM ŠIFROVANÉ SPOJENIE...</p>
+            <p>> KOMPRIMUJEM DÁTA PRIHLÁŠKY...</p>
+            <p id="upload-status">> ODOVZDÁVAM NA SERVER LSPD [HQ-LOS-SANTOS]...</p>
+            <div style="width: 100%; height: 4px; background: rgba(0, 170, 255, 0.1); margin-top: 20px;">
+                <div class="progress-bar-fill" id="pbar"></div>
+            </div>
+            <h2 style="margin-top: 30px; letter-spacing: 5px;" class="blink">PRÍSTUP SCHVÁLENÝ / ODOSLANÉ</h2>
+        </div>
+    </div>
 
     <div class="card" style="max-width: 800px; width: 100%;">
-        <h1 class="section-title" style="color: #00d4ff; text-align: center;">NÁBOROVÝ FORMULÁR LSPD</h1>
+        <h1 style="color: #00aaff; text-align: center; letter-spacing: 5px; position: relative; z-index: 1; font-size: 1.5rem;">LSPD NÁBOROVÝ SYSTÉM</h1>
         
         <form id="lspd-form">
             <div class="section-divider">I. Časť: In Character (IC)</div>
             <div class="form-group">
                 <label>1. Jméno a příjmení</label>
-                <input type="text" id="ic_name" required>
+                <input type="text" id="ic_name" required placeholder="napr. John Doe">
             </div>
             <div class="form-group">
                 <label>2. Datum narození</label>
@@ -35,27 +195,27 @@
             </div>
             <div class="form-group">
                 <label>3. Email a telefonní číslo</label>
-                <input type="text" id="ic_contact" required>
+                <input type="text" id="ic_contact" required placeholder="555-XXXX / email@lspd.com">
             </div>
             <div class="form-group">
                 <label>4. Vzdělání</label>
-                <input type="text" id="ic_edu" required>
+                <input type="text" id="ic_edu" required placeholder="napr. Stredná policajná škola">
             </div>
             <div class="form-group">
                 <label>5. Vlastníte licence? (Zbrojní, Vodičský...)</label>
-                <input type="text" id="ic_lic" required>
+                <input type="text" id="ic_lic" required placeholder="VP sk. B, ZP sk. A...">
             </div>
             <div class="form-group">
                 <label>6. Něčo o sobě (rozepiš se)</label>
-                <textarea id="ic_about" rows="4" required></textarea>
+                <textarea id="ic_about" rows="4" required placeholder="Váš životný príbeh a skúsenosti..."></textarea>
             </div>
             <div class="form-group">
                 <label>7. Proč se zrovna k nám chceš připojit?</label>
-                <textarea id="ic_why" rows="3" required></textarea>
+                <textarea id="ic_why" rows="3" required placeholder="Vaša motivácia pre službu v zbore..."></textarea>
             </div>
             <div class="form-group">
                 <label>8. Jaká je vaše psychická odolnost?</label>
-                <input type="text" id="ic_mental" required>
+                <input type="text" id="ic_mental" required placeholder="Stupnica 1-10 alebo slovne...">
             </div>
             <div class="form-group">
                 <label>9. Máte nějaké zdravotní potíže?</label>
@@ -63,40 +223,40 @@
             </div>
             <div class="form-group">
                 <label>10. Co bys chtěl u nás dokázat?</label>
-                <input type="text" id="ic_goal" required>
+                <input type="text" id="ic_goal" required placeholder="Vaše ambície v LSPD...">
             </div>
             <div class="form-group">
                 <label>11. Do jaké divize by ses chtěl dostat?</label>
                 <select id="ic_div">
-                    <option value="MBU">MBU</option>
+                    <option value="MBU (Motorcycle Unit)">MBU (Motorcycle Unit)</option>
                     <option value="S.W.A.T.">S.W.A.T.</option>
-                    <option value="HSU">HSU</option>
-                    <option value="GND">GND</option>
+                    <option value="HSU (High Speed Unit)">HSU (High Speed Unit)</option>
+                    <option value="GND (Gang and Narcotics)">GND (Gang and Narcotics)</option>
                     <option value="Detective Bureau">Detective Bureau</option>
-                    <option value="FTO">FTO</option>
+                    <option value="FTO (Field Training Officer)">FTO (Field Training Officer)</option>
                 </select>
             </div>
 
             <div class="section-divider">II. Časť: Out of Character (OOC)</div>
             <div class="form-group">
                 <label>1. Discord Nick (napr. meno#0000)</label>
-                <input type="text" id="ooc_discord" required>
+                <input type="text" id="ooc_discord" required placeholder="uzivatel#1234">
             </div>
             <div class="form-group">
                 <label>2. Věk (Skutočný)</label>
-                <input type="number" id="ooc_age" required>
+                <input type="number" id="ooc_age" required placeholder="18+">
             </div>
             <div class="form-group">
                 <label>3. Jsi na druhém charu v nelegálce?</label>
-                <input type="text" id="ooc_illegal" required>
+                <input type="text" id="ooc_illegal" required placeholder="Ano / Ne / Detaily">
             </div>
             <div class="form-group">
                 <label>4. Kolik máš odehraných hodin v RP?</label>
-                <input type="text" id="ooc_hours" required>
+                <input type="text" id="ooc_hours" required placeholder="napr. 500h">
             </div>
 
-            <button type="submit" class="btn-terminal" style="width: 100%; padding: 15px; margin-top: 20px;">
-                ODESLAT PŘIHLÁŠKU DO SYSTÉMU
+            <button type="submit" class="btn-terminal" style="width: 100%; padding: 20px; margin-top: 30px; font-size: 1.1rem;">
+                [ ODESLAT PŘIHLÁŠKU DO SYSTÉMU ]
             </button>
         </form>
     </div>
@@ -104,116 +264,58 @@
 <script>
     document.getElementById('lspd-form').addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        const card = document.querySelector('.card');
+        card.style.animation = "shake 0.4s";
 
-        // 1. SEM VLOŽ SVOJU DISCORD WEBHOOK URL
         const webhookURL = "https://discord.com/api/webhooks/1477314000567144598/x4GWHa1Dc-zcTsJYCF1iPWOfHoah2EvH9p73isyaZXIwPbAbvGZrNMxQOnkBXIQXc2yy";
 
-        // 2. Zhromaždenie všetkých údajov z formulára
-        const data = {
-            meno: document.getElementById('ic_name').value,
-            narodenie: document.getElementById('ic_dob').value,
-            kontakt: document.getElementById('ic_contact').value,
-            vzdelanie: document.getElementById('ic_edu').value,
-            licencie: document.getElementById('ic_lic').value,
-            o_sebe: document.getElementById('ic_about').value,
-            motivacia: document.getElementById('ic_why').value,
-            psychika: document.getElementById('ic_mental').value,
-            zdravie: document.getElementById('ic_health').value,
-            ciele: document.getElementById('ic_goal').value,
-            divizia: document.getElementById('ic_div').value,
-            discord: document.getElementById('ooc_discord').value,
-            vek: document.getElementById('ooc_age').value,
-            nelegalka: document.getElementById('ooc_illegal').value,
-            hodiny: document.getElementById('ooc_hours').value
-        };
-
-        // 3. Príprava správy pre Discord (Embed)
         const payload = {
             username: "LSPD Systém | Nová Prihláška",
-            avatar_url: "https://i.imgur.com/39pL9D2.png", // Môžeš zmeniť za vlastné logo
             embeds: [{
                 title: "📄 NOVÁ ŽIADOSŤ O VSTUP DO LSPD",
-                color: 2123412, // Tmavomodrá farba
+                color: 43775,
                 fields: [
-                    { name: "🟦 I. ČASŤ: IN CHARACTER (IC)", value: "--------------------------------------------------", inline: false },
-                    { name: "Meno a Priezvisko", value: data.meno, inline: true },
-                    { name: "Dátum narodenia", value: data.narodenie, inline: true },
-                    { name: "Kontakt", value: data.kontakt, inline: true },
-                    { name: "Vzdelanie", value: data.vzdelanie, inline: false },
-                    { name: "Licencie", value: data.licencie, inline: false },
-                    { name: "Něčo o sobě", value: data.o_sebe, inline: false },
-                    { name: "Prečo práve k nám?", value: data.motivacia, inline: false },
-                    { name: "Psychická odolnosť", value: data.psychika, inline: true },
-                    { name: "Zdravotné problémy", value: data.zdravie || "Žiadne", inline: true },
-                    { name: "Ciele v zbore", value: data.ciele, inline: false },
-                    { name: "Preferovaná divízia", value: `**${data.divizia}**`, inline: false },
-                    
-                    { name: "🟧 II. ČASŤ: OUT OF CHARACTER (OOC)", value: "--------------------------------------------------", inline: false },
-                    { name: "Discord Nick", value: data.discord, inline: true },
-                    { name: "Reálny Vek", value: data.vek, inline: true },
-                    { name: "Odehrané hodiny", value: data.hodiny, inline: true },
-                    { name: "Pôsobenie v nelegálke", value: data.nelegalka, inline: false }
+                    { name: "🟦 I. ČASŤ: IN CHARACTER (IC)", value: "------------------------------------------", inline: false },
+                    { name: "Meno a Priezvisko", value: document.getElementById('ic_name').value, inline: true },
+                    { name: "Dátum narodenia", value: document.getElementById('ic_dob').value, inline: true },
+                    { name: "Kontakt", value: document.getElementById('ic_contact').value, inline: true },
+                    { name: "Vzdelanie", value: document.getElementById('ic_edu').value, inline: false },
+                    { name: "Licencie", value: document.getElementById('ic_lic').value, inline: false },
+                    { name: "Něčo o sobě", value: document.getElementById('ic_about').value, inline: false },
+                    { name: "Prečo práve k nám?", value: document.getElementById('ic_why').value, inline: false },
+                    { name: "Psychická odolnosť", value: document.getElementById('ic_mental').value, inline: true },
+                    { name: "Zdravotné problémy", value: document.getElementById('ic_health').value || "Nie", inline: true },
+                    { name: "Ciele v zbore", value: document.getElementById('ic_goal').value, inline: false },
+                    { name: "Preferovaná divízia", value: document.getElementById('ic_div').value, inline: false },
+                    { name: " ", value: " ", inline: false },
+                    { name: "🟧 II. ČASŤ: OUT OF CHARACTER (OOC)", value: "------------------------------------------", inline: false },
+                    { name: "Discord Nick", value: document.getElementById('ooc_discord').value, inline: true },
+                    { name: "Reálny Vek", value: document.getElementById('ooc_age').value, inline: true },
+                    { name: "Odehrané hodiny", value: document.getElementById('ooc_hours').value, inline: true },
+                    { name: "Pôsobenie v nelegálke", value: document.getElementById('ooc_illegal').value, inline: false }
                 ],
                 footer: { text: "Odoslané z LSPD Web Portálu • " + new Date().toLocaleString() }
             }]
         };
 
-        // 4. Odoslanie cez Fetch API
         fetch(webhookURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
         .then(() => {
-            alert('Vaša prihláška bola úspešne doručená vedeniu LSPD!');
-            window.location.href = "nábory.html";
+            const overlay = document.getElementById('success-overlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => { document.getElementById('pbar').style.width = '100%'; }, 100);
+            setTimeout(() => { window.location.href = "nábory.html"; }, 3500);
         })
-        .catch(err => {
-            console.error(err);
-            alert('Chyba pri odosielaní. Skontrolujte pripojenie.');
-        });
-    });
-</script>
-
-<script>
-    // 1. Efekt pri načítaní stránky (Fade In)
-    window.addEventListener('DOMContentLoaded', () => {
-        document.body.classList.add('fade-in');
+        .catch(() => alert('CHYBA SYSTÉMU.'));
     });
 
-    // 2. Efekt pri odchode zo stránky (Fade Out)
-    // Zachytí všetky kliknutia na odkazy
-    document.querySelectorAll('a, button').forEach(element => {
-        element.addEventListener('click', function(e) {
-            // Zistíme, kam odkaz smeruje (buď cez href alebo onclick)
-            let destination = this.href || (this.getAttribute('onclick') ? this.getAttribute('onclick').match(/'([^']+)'/)[1] : null);
-            
-            if (destination && !destination.startsWith('#')) {
-                e.preventDefault(); // Zastavíme okamžitý skok
-                document.body.style.opacity = '0'; // Stránka stmavne
-                
-                setTimeout(() => {
-                    window.location.href = destination; // Presmerujeme po animácii
-                }, 500); // Čas musí sedieť s transition v CSS (0.5s)
-            }
-        });
-    });
-</script>
-<script>
-    window.addEventListener('load', function() {
-        const loader = document.getElementById('loader');
-        // Pridáme mierne oneskorenie (napr. 800ms), aby si užívateľ efekt všimol
-        setTimeout(() => {
-            loader.classList.add('hidden');
-        }, 800);
+    window.addEventListener('load', () => {
+        setTimeout(() => { document.getElementById('loader').classList.add('hidden'); }, 1000);
     });
 </script>
 </body>
-<div id="loader">
-    <div class="terminal-loader">
-        <div class="spinner"></div>
-        <p>AUTENTIFIKÁCIA SYSTÉMU...</p>
-        <span class="status">PRIPÁJANIE K DATABÁZE LSPD...</span>
-    </div>
-</div>
 </html>

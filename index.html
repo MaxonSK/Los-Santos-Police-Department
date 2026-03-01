@@ -6,8 +6,271 @@
     <title>LSPD | Los Santos Police Department</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* --- NOVÝ NAVBAR ŠTÝL (PODĽA VOLACKY.HTML) --- */
+        nav {
+            background: #000 !important; /* Čistá čierna podľa screenu */
+            border-bottom: 2px solid #00aaff !important; /* Modrá linka na spodku */
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: none !important; /* Odstránený blur pre čistý look */
+        }
+
+        .nav-container {
+            display: flex;
+            gap: 40px; /* Väčšie rozostupy medzi položkami */
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 20px;
+            justify-content: center; /* Centrovanie položiek */
+        }
+
+        .nav-container a {
+            text-decoration: none;
+            color: #888 !important; /* Sivá pre neaktívne */
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        /* Modrý glow efekt pre aktívny link a hover */
+        .nav-container a:hover, .nav-container a.active {
+            color: #00aaff !important;
+            text-shadow: 0 0 10px rgba(0, 170, 255, 0.7);
+        }
+
+        /* Odstránenie starých podčiarkovníkov a pridanie čistého štýlu */
+        .nav-container a::after {
+            display: none; 
+        }
+
+        .auth-box {
+            position: absolute;
+            right: 20px;
+        }
+
+        /* --- PÔVODNÉ EFEKTY ZOSTÁVAJÚ --- */
+        
+        .glow-text {
+            animation: insaneGlow 3s infinite alternate;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+
+        @keyframes insaneGlow {
+            from { text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff; }
+            to { text-shadow: 0 0 20px #00aaff, 0 0 40px #00aaff, 0 0 60px #0055ff; transform: scale(1.02); }
+        }
+
+        .card, .division-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0, 170, 255, 0.1) !important;
+            background: rgba(15, 15, 15, 0.6) !important;
+            backdrop-filter: blur(5px);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: #00aaff !important;
+            box-shadow: 0 10px 40px rgba(0, 170, 255, 0.3);
+        }
+
+        .division-card:hover {
+            background: #00aaff !important;
+            color: white !important;
+            box-shadow: 0 0 25px #00aaff;
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        .btn-terminal {
+            border: 1px solid #00aaff !important;
+            background: transparent !important;
+            color: #00aaff !important;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        .btn-terminal:hover {
+            background: #00aaff !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px #00aaff;
+        }
+
+        .btn-logout {
+            border: 1px solid #ff4444 !important;
+            color: #ff4444 !important;
+            background: transparent !important;
+            transition: all 0.3s ease;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        .btn-logout:hover {
+            background: #ff4444 !important;
+            color: #fff !important;
+            box-shadow: 0 0 20px #ff4444;
+        }
+
+        .recruit-special {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(45deg, #0055ff, #00aaff) !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        body { opacity: 1; transition: opacity 0.5s ease; }
+        .fade-in { animation: pageEnter 0.8s ease-out; }
+        @keyframes pageEnter {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- PRIDANÉ: PROFESIONÁLNE PREEFEKTOVANÝ TERMINÁL --- */
+        .auth-overlay {
+            background: rgba(0, 0, 0, 0.85) !important;
+            backdrop-filter: blur(15px) !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000;
+            transition: background 0.3s ease;
+        }
+
+        .auth-card {
+            background: #0a0a0a !important;
+            border: 1px solid #00aaff !important;
+            box-shadow: 0 0 30px rgba(0, 170, 255, 0.2), inset 0 0 15px rgba(0, 170, 255, 0.1);
+            padding: 40px !important;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* Scanline Animácia */
+        .auth-card::after {
+            content: "";
+            position: absolute;
+            top: -100%; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(transparent, rgba(0, 170, 255, 0.05), transparent);
+            animation: scanline 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { top: -100%; }
+            100% { top: 100%; }
+        }
+
+        .auth-card h2 {
+            color: #fff;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 10px #00aaff;
+        }
+
+        .auth-card input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(0, 170, 255, 0.3) !important;
+            padding: 12px;
+            margin-bottom: 15px;
+            color: #fff !important;
+            font-family: monospace;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .auth-card input:focus {
+            border-color: #00aaff !important;
+            background: rgba(0, 170, 255, 0.05) !important;
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 12px;
+            background: transparent !important;
+            border: 1px solid #00aaff !important;
+            color: #00aaff !important;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-main:hover {
+            background: #00aaff !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px #00aaff;
+        }
+
+        .btn-close {
+            margin-top: 15px;
+            background: none !important;
+            border: none !important;
+            color: #555 !important;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-close:hover { color: #ff4444 !important; }
+
+        /* Status riadok pod inputmi */
+        .terminal-status {
+            font-size: 9px;
+            color: #00aaff;
+            text-align: left;
+            margin-bottom: 15px;
+            font-family: monospace;
+            opacity: 0.7;
+        }
+
+        /* --- NOVÉ: CHYBOVÉ EFEKTY --- */
+        @keyframes terminalShake {
+            0% { transform: translate(0,0); }
+            10% { transform: translate(-5px, -2px); }
+            20% { transform: translate(5px, 2px); }
+            30% { transform: translate(-5px, 0px); }
+            40% { transform: translate(5px, -1px); }
+            50% { transform: translate(-2px, 2px); }
+            100% { transform: translate(0,0); }
+        }
+
+        .error-shake {
+            animation: terminalShake 0.4s ease-in-out !important;
+            border-color: #ff4444 !important;
+            box-shadow: 0 0 50px rgba(255, 68, 68, 0.4) !important;
+        }
+
+        .error-overlay {
+            background: rgba(255, 0, 0, 0.15) !important;
+        }
+
+    </style>
 </head>
-<body>
+<body class="fade-in">
 
 <nav>
     <div class="nav-container">
@@ -33,7 +296,7 @@
     <div class="container">
         <div class="card">
             <h2 class="section-title">Odkaz od Chief of Police</h2>
-            <p>„Služba v Los Santos Police Department nie je len prácou, je to celoživotný záväzok voči občanom nášho mesta. Naším poslaním je byť štítom, ktorý stojí medzi poriadkom a chaosom. Každý deň vyrážame do ulíc s vedomím, že naša integrita a odvaha sú základnými piliermi bezpečnosti Los Santos. Naším cieľom nie je len represia, ale predovšetkým prevencia a budovanie dôvery s komunitou, ktorú chránime. Spoločne tvoríme bezpečnejšiu budúcnosť.“</p>
+            <p>„Služba v Los Santos Police Department nie je len prácou, je to celoživotný záväzok voči občanom nášho mesta. Naším poslaním je byť štítom, ktorý stojí medzi poriadkom a chaosom...“</p>
         </div>
 
         <h2 class="section-title">Špecializované divízie</h2>
@@ -47,15 +310,14 @@
         </div>
 
         <div class="card career-section">
-    <h3 class="accent-text">Kariéra v zbore</h3>
-    <p>Hľadáme nových kadetov. Služba v LSPD je poslaním.</p>
-    
-    <a href="nábory.html" style="text-decoration: none; display: inline-block;">
-        <button id="recruit-btn" class="btn-terminal recruit-special" data-text="VSTÚPIŤ DO AKADÉMIE">
-            VSTÚPIŤ DO AKADÉMIE
-        </button>
-    </a>
-</div>
+            <h3 class="accent-text">Kariéra v zbore</h3>
+            <p>Hľadáme nových kadetov. Služba v LSPD je poslaním.</p>
+            <a href="nábory.html" style="text-decoration: none; display: inline-block;">
+                <button id="recruit-btn" class="btn-terminal recruit-special">
+                    VSTÚPIŤ DO AKADÉMIE
+                </button>
+            </a>
+        </div>
 
         <div class="card" style="margin-top: 40px;">
             <h2 class="section-title">High Command Staff</h2>
@@ -82,17 +344,17 @@
                 </div>
             </div>
         </div>
-
-
+    </div>
 </div>
 
 <div id="auth-modal" class="auth-overlay" style="display: none;">
     <div class="auth-card">
-        <h2>POLICE TERMINAL</h2>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Heslo">
-        <button class="btn-main" onclick="handleAuth()">VSTÚPIŤ</button>
-        <button class="btn-close" onclick="toggleAuth()">ZAVRIEŤ</button>
+        <h2>LSPD TERMINAL</h2>
+        <div class="terminal-status">> OČAKÁVAM IDENTIFIKÁCIU...</div>
+        <input type="email" id="email" placeholder="EMAIL ADRESA">
+        <input type="password" id="password" placeholder="SYSTÉMOVÉ HESLO">
+        <button class="btn-main" onclick="handleAuth()">OVERIŤ PRÍSTUP</button>
+        <button class="btn-close" onclick="toggleAuth()">Zrušiť</button>
     </div>
 </div>
 
@@ -109,8 +371,34 @@
     async function handleAuth() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const status = document.querySelector('.terminal-status');
+        const modal = document.getElementById('auth-modal');
+        const card = document.querySelector('.auth-card');
+        
+        status.innerText = "> OVERUJEM DATABÁZU...";
+        status.style.color = "#ffcc00";
+
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) alert(error.message); else location.reload();
+        
+        if (error) {
+            // SPÚŠŤAME EFEKTY CHYBY
+            status.innerText = "> PRÍSTUP ZAMIETNUTÝ! NEPLATNÉ ÚDAJE.";
+            status.style.color = "#ff4444";
+            
+            modal.classList.add('error-overlay');
+            card.classList.add('error-shake');
+
+            // Reset efektov po 500ms aby sa dali spustiť znova
+            setTimeout(() => {
+                modal.classList.remove('error-overlay');
+                card.classList.remove('error-shake');
+            }, 500);
+
+        } else {
+            status.innerText = "> PRÍSTUP POVOLENÝ. PRIHLASUJEM...";
+            status.style.color = "#00ff00";
+            setTimeout(() => location.reload(), 1000);
+        }
     }
 
     async function handleLogout() {
@@ -129,46 +417,5 @@
     }
     checkUser();
 </script>
-
-<script>
-    // 1. Efekt pri načítaní stránky (Fade In)
-    window.addEventListener('DOMContentLoaded', () => {
-        document.body.classList.add('fade-in');
-    });
-
-    // 2. Efekt pri odchode zo stránky (Fade Out)
-    // Zachytí všetky kliknutia na odkazy
-    document.querySelectorAll('a, button').forEach(element => {
-        element.addEventListener('click', function(e) {
-            // Zistíme, kam odkaz smeruje (buď cez href alebo onclick)
-            let destination = this.href || (this.getAttribute('onclick') ? this.getAttribute('onclick').match(/'([^']+)'/)[1] : null);
-            
-            if (destination && !destination.startsWith('#')) {
-                e.preventDefault(); // Zastavíme okamžitý skok
-                document.body.style.opacity = '0'; // Stránka stmavne
-                
-                setTimeout(() => {
-                    window.location.href = destination; // Presmerujeme po animácii
-                }, 500); // Čas musí sedieť s transition v CSS (0.5s)
-            }
-        });
-    });
-</script>
-<script>
-    window.addEventListener('load', function() {
-        const loader = document.getElementById('loader');
-        // Pridáme mierne oneskorenie (napr. 800ms), aby si užívateľ efekt všimol
-        setTimeout(() => {
-            loader.classList.add('hidden');
-        }, 800);
-    });
-</script>
 </body>
-<div id="loader">
-    <div class="terminal-loader">
-        <div class="spinner"></div>
-        <p>AUTENTIFIKÁCIA SYSTÉMU...</p>
-        <span class="status">PRIPÁJANIE K DATABÁZE LSPD...</span>
-    </div>
-</div>
 </html>

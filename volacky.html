@@ -3,157 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LSPD - Volačky</title>
+    <title>LSPD - Volačky (Premium Cloud)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            background: radial-gradient(circle at 50% 0%, #0a192f 0%, #050505 70%) no-repeat fixed !important;
-            color: white; margin: 0; font-family: 'Segoe UI', sans-serif;
+        :root {
+            --primary: #00aaff;
+            --primary-glow: rgba(0, 170, 255, 0.4);
+            --danger: #ff4422;
+            --warning: #ffcc00;
+            --bg-dark: #050505;
+            --glass: rgba(13, 13, 13, 0.85);
+        }
+
+        body { 
+            background: radial-gradient(circle at 50% 0%, #0a192f 0%, var(--bg-dark) 70%) no-repeat fixed !important; 
+            color: white; 
+            margin: 0; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            overflow-x: hidden;
+        }
+
+        /* SCANLINE EFEKT */
+        body::before {
+            content: " ";
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* NAVBAR - FUNKČNÉ PREKLIKY */
+        .navbar { 
+            position: fixed; top: 0; width: 100%; z-index: 1000; 
+            background: rgba(5, 5, 5, 0.9); 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 50px; border-bottom: 1px solid rgba(0, 170, 255, 0.3); 
+            backdrop-filter: blur(20px);
+            box-shadow: 0 5px 30px rgba(0,0,0,0.8);
+            box-sizing: border-box;
+        }
+        .nav-links { display: flex; list-style: none; gap: 0; padding: 0; margin: 0; }
+        .nav-links li { border-left: 1px solid rgba(255,255,255,0.05); }
+        .nav-links li:last-child { border-right: 1px solid rgba(255,255,255,0.05); }
+        
+        .nav-links a { 
+            display: block;
+            padding: 25px 35px;
+            color: #888; text-decoration: none; font-weight: bold; 
+            text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .nav-links a:hover { 
+            color: white; 
+            background: rgba(0, 170, 255, 0.05);
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+        .nav-links a.active { 
+            color: var(--primary); 
+            background: rgba(0, 170, 255, 0.1);
+        }
+        .nav-links a.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+            background: var(--primary); box-shadow: 0 0 15px var(--primary);
+        }
+
+        /* MEGA BRUTAL LOGIN BUTTON EFFECT */
+        .auth-nav-box {
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-mega-glow {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 10px 25px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+        }
+
+        .btn-mega-glow:hover {
+            color: #fff;
+            background: var(--primary);
+            box-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary-glow);
+            text-shadow: 0 0 5px #fff;
+            transform: scale(1.05);
+        }
+
+        .btn-mega-glow::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
             transition: 0.5s;
         }
-        .navbar {
-            position: fixed; top: 0; width: 100%; z-index: 1000;
-            background: rgba(10, 10, 10, 0.95); display: flex;
-            justify-content: center; align-items: center; padding: 15px 0;
-            border-bottom: 2px solid #00aaff; backdrop-filter: blur(10px);
-        }
-        .nav-links { display: flex; list-style: none; gap: 30px; padding: 0; margin: 0; }
-        .nav-links a { color: #888; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
-        .nav-links a.active { color: #00aaff; text-shadow: 0 0 10px rgba(0, 170, 255, 0.5); }
-        .container { padding: 140px 20px 60px; max-width: 900px; margin: 0 auto; transition: 0.5s; }
-        
-        /* ŠTÝL PRE LEGENDU */
-        .legenda {
-            background: rgba(0, 170, 255, 0.1);
-            border: 1px solid rgba(0, 170, 255, 0.3);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            display: flex;
-            gap: 40px;
-            justify-content: center;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-        .legenda span b { color: #00aaff; }
 
-        .volacky-card {
-            background: rgba(13, 13, 13, 0.9); border-left: 5px solid #00aaff;
-            padding: 30px; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        .btn-mega-glow:hover::before {
+            left: 100%;
         }
-        .volacka-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'Consolas', monospace; }
-        .volacka-id { color: #00aaff; width: 140px; font-weight: bold; }
-        .volacka-tag { color: #555; margin-right: 15px; }
-        .officer-name { flex-grow: 1; color: #eee; padding: 5px 10px; outline: none; border-radius: 4px; min-height: 1.2em; }
-        .officer-name[contenteditable="true"] { background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(0, 170, 255, 0.3); }
-        .officer-name[contenteditable="true"]:focus { background: rgba(0, 170, 255, 0.1); color: #00aaff; border: 1px solid #00aaff; }
-        .divider { text-align: center; color: #222; margin: 20px 0; font-weight: bold; letter-spacing: 3px; }
+
+        .btn-logout-nav {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-logout-nav:hover {
+            background: var(--danger);
+            box-shadow: 0 0 20px var(--danger), 0 0 40px rgba(255, 68, 34, 0.4);
+        }
+
+        /* ZVYŠOK TVOJHO CSS */
+        .container { padding: 160px 20px 80px; max-width: 1000px; margin: 0 auto; animation: fadeIn 1s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { 
+            text-align: center; letter-spacing: 10px; margin-bottom: 10px; 
+            text-transform: uppercase; font-weight: 900;
+            background: linear-gradient(to bottom, #fff 20%, #444 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.1));
+        }
+
+        .legenda { 
+            background: var(--glass); 
+            border: 1px solid rgba(0, 170, 255, 0.2); 
+            padding: 15px 30px; border-radius: 50px; 
+            margin: 0 auto 50px; display: flex; gap: 40px; 
+            width: fit-content; font-size: 0.75rem; letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .legenda span b { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+
+        .volacky-card { 
+            background: var(--glass); 
+            border: 1px solid rgba(255,255,255,0.03);
+            border-left: 4px solid var(--primary); 
+            padding: 30px; border-radius: 12px; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            position: relative; overflow: hidden;
+        }
+
+        .volacka-row { 
+            display: flex; align-items: center; 
+            padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); 
+            font-family: 'Consolas', 'Courier New', monospace;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+        .volacka-row:hover { 
+            background: rgba(0, 170, 255, 0.03); 
+            transform: translateX(5px);
+        }
         
-        @keyframes modalShow {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .volacka-id { color: var(--primary); width: 150px; font-weight: bold; font-size: 1.05rem; }
+        .volacka-tag { color: #555; width: 80px; font-size: 0.85rem; }
+        
+        .officer-name { 
+            flex-grow: 1; color: #aaa; padding: 6px 15px; 
+            outline: none; border-radius: 4px; min-height: 1.2em;
+            transition: all 0.3s;
+            border: 1px solid transparent;
         }
+        .officer-name[contenteditable="true"] { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(0, 170, 255, 0.3); 
+            color: white;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .divider { 
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            margin: 25px 0;
+            position: relative;
+        }
+        .divider::after {
+            content: 'DATA SECTION';
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #0d0d0d; padding: 0 15px; font-size: 0.6rem; color: #333; letter-spacing: 4px;
+        }
+
+        /* MODÁLY PRE LOGIN TERMINAL */
+        .overlay-page { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.95); display: none; 
+            justify-content: center; align-items: center; z-index: 2000; 
+            backdrop-filter: blur(15px); 
+            animation: fadeInModal 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        @keyframes fadeInModal { from { opacity: 0; backdrop-filter: blur(0px); } }
+
+        .auth-box { 
+            background: #0a0c11; border-radius: 20px; padding: 50px; 
+            width: 400px; text-align: center; 
+            border: 1px solid rgba(0, 170, 255, 0.2);
+            box-shadow: 0 0 50px rgba(0, 170, 255, 0.1), 0 40px 80px rgba(0,0,0,1);
+            position: relative;
+        }
+
+        /* INPUTY PRE LOGIN MODAL */
+        .terminal-input {
+            width: 100%; background: #000; border: 1px solid #1a1a1a; 
+            padding: 15px; border-radius: 8px; color: white; 
+            margin-bottom: 15px; outline: none; transition: 0.3s;
+            box-sizing: border-box; font-family: 'Consolas', monospace;
+        }
+        .terminal-input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+
+        #adminPassField { 
+            width: 100%; background: #000; border: 1px solid #1a1a1a; 
+            padding: 20px; border-radius: 12px; color: var(--primary); 
+            text-align: center; font-size: 1.8rem; margin-bottom: 30px; 
+            outline: none; transition: 0.3s; letter-spacing: 10px;
+            box-sizing: border-box;
+        }
+        #adminPassField:focus { border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
+
+        .btn-confirm, .btn-save { 
+            background: linear-gradient(135deg, var(--danger), #800); border: none; color: white; 
+            padding: 18px; border-radius: 12px; font-weight: bold; 
+            cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 3px;
+            transition: 0.4s; box-shadow: 0 10px 20px rgba(255, 68, 34, 0.2);
+        }
+        .btn-confirm:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255, 68, 34, 0.4); filter: brightness(1.2); }
+
+        .btn-save { 
+            background: linear-gradient(135deg, var(--primary), #005580); 
+            box-shadow: 0 10px 20px rgba(0, 170, 255, 0.2); 
+        }
+        .btn-save:hover { box-shadow: 0 15px 30px rgba(0, 170, 255, 0.4); }
+
+        #adminPanelTrigger { 
+            position: fixed; bottom: 40px; right: 40px; 
+            background: var(--warning); color: black; border: none; 
+            padding: 20px 40px; border-radius: 12px; 
+            font-weight: 900; cursor: pointer; z-index: 500; 
+            box-shadow: 0 10px 30px rgba(255, 204, 0, 0.2);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase; font-size: 0.85rem; letter-spacing: 2px;
+        }
+        #adminPanelTrigger:hover { transform: scale(1.05) translateY(-5px); background: #fff; }
+
+        .shake { animation: shake 0.4s; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
         }
-        @keyframes pulseAdmin {
-            0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 204, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
-        }
-        .overlay-page {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 5, 5, 0.9); display: none; justify-content: center; align-items: center; z-index: 2000; flex-direction: column;
-            backdrop-filter: blur(8px);
-        }
-        .auth-box {
-            background: #121826; border-radius: 25px; padding: 50px;
-            width: 400px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.7);
-            border: 1px solid rgba(255,255,255,0.05);
-            animation: modalShow 0.3s ease-out forwards;
-        }
-        .shake-anim { animation: shake 0.2s ease-in-out 0s 2; }
-        #adminPassField {
-            width: 100%; background: #1a2235; border: none; padding: 18px;
-            border-radius: 12px; color: white; text-align: center; font-size: 1.5rem;
-            letter-spacing: 8px; margin-bottom: 30px; outline: none; box-sizing: border-box;
-            transition: 0.3s; border: 1px solid transparent;
-        }
-        #adminPassField:focus { border-color: #00aaff; background: #1e2941; }
-        .btn-confirm { background: #ff4422; border: none; color: white; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-confirm:hover { transform: translateY(-2px); filter: brightness(1.2); }
-        .btn-save { background: #00aaff; border: none; color: white; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 170, 255, 0.4); }
-        .btn-error { background: #555; border: none; color: white; padding: 10px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        #adminPanelTrigger {
-            position: fixed; bottom: 30px; right: 30px; background: #ffcc00;
-            color: black; border: none; padding: 15px 30px; border-radius: 50px;
-            font-weight: bold; cursor: pointer; display: block; z-index: 500;
-            animation: pulseAdmin 2s infinite;
-            transition: 0.3s;
-        }
-        #adminPanelTrigger:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
 
-    <nav class="navbar" id="mainNav">
+    <nav class="navbar">
         <ul class="nav-links">
             <li><a href="index.html">DOMOV</a></li>
             <li><a href="nabory.html">NÁBORY</a></li>
             <li><a href="patroly.html">PATROLY</a></li>
             <li><a href="volacky.html" class="active">VOLAČKY</a></li>
-            <li><a href="https://law-olive.vercel.app/" target="_blank">ZÁKONNÍK</a></li>
+            <li><a href="zakonnik.html">ZÁKONNÍK</a></li>
         </ul>
+
+        <div class="auth-nav-box">
+            <button id="auth-trigger" class="btn-mega-glow" onclick="toggleAuthModal()">LOGIN TERMINAL</button>
+            <button id="logout-btn" class="btn-mega-glow btn-logout-nav" style="display: none;" onclick="handleLogout()">ODHLÁSIŤ</button>
+        </div>
     </nav>
 
-    <div class="container" id="mainContent">
-        <h1 style="text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Volačky LSPD</h1>
-        
+    <div class="container">
+        <h1>Volačky LSPD</h1>
         <div class="legenda">
             <span>DVAJA NA PATROLE: <b>ADAM</b></span>
             <span>TRAJA NA PATROLE: <b>JUNIOR</b></span>
         </div>
+        <div class="volacky-card" id="mainCard">
+            <div style="text-align: center; color: var(--primary); letter-spacing: 2px; padding: 40px;">
+                <span style="display: block; margin-bottom: 10px;">ŠIFROVANÉ SPOJENIE...</span>
+                <div style="font-size: 0.7rem; color: #333;">INITIALIZING SUPABASE CLOUD SYNC v3.0</div>
+            </div>
+        </div>
+    </div>
 
-        <div class="volacky-card" id="mainCard">Načítavam systém...</div>
+    <div id="loginModal" class="overlay-page">
+        <div class="auth-box">
+            <h2 style="letter-spacing: 5px; color: #fff; margin-bottom: 10px;">LSPD AUTH</h2>
+            <p style="color: #444; font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 2px;">VSTUP DO POLICAJNÉHO TERMINÁLU</p>
+            <input type="email" id="email" class="terminal-input" placeholder="SLUŽOBNÝ EMAIL">
+            <input type="password" id="password" class="terminal-input" placeholder="HESLO">
+            <button class="btn-save" onclick="handleAuth()">VSTÚPIŤ DO SYSTÉMU</button>
+            <p onclick="closeModals()" style="color:#333; cursor:pointer; margin-top:25px; font-size:0.65rem; font-weight: bold; letter-spacing: 2px;">ZAVRIEŤ</p>
+        </div>
     </div>
 
     <div id="adminAuthPage" class="overlay-page">
-        <div class="auth-box">
-            <h2>AUTORIZÁCIA</h2>
-            <input type="password" id="adminPassField" placeholder="••••••" maxlength="10">
-            <div style="display:flex; gap:10px;">
-                <button onclick="closeAdminAuth()" style="background:transparent; color:#555; border:none; cursor:pointer;">ZRUŠIŤ</button>
-                <button class="btn-confirm" onclick="verifyCode()">AKTIVOVAŤ</button>
-            </div>
+        <div class="auth-box" id="authBox">
+            <h2 style="letter-spacing: 5px; color: #fff; margin-bottom: 10px;">SECURITY</h2>
+            <p style="color: #444; font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 2px;">POTVRĎTE IDENTITU ADMINISTRÁTORA</p>
+            <input type="password" id="adminPassField" placeholder="••••" maxlength="10">
+            <button class="btn-confirm" onclick="verifyCode()">AKTIVOVAŤ EDITÁCIU</button>
+            <p onclick="closeModals()" style="color:#333; cursor:pointer; margin-top:25px; font-size:0.65rem; font-weight: bold; letter-spacing: 2px;">ZRUŠIŤ OPERÁCIU</p>
         </div>
     </div>
 
     <div id="saveConfirmPage" class="overlay-page">
         <div class="auth-box">
-            <h2>ULOŽIŤ ZMENY?</h2>
-            <p style="color: #888; margin-bottom: 30px;">Všetky úpravy vo volačkách budú zapísané do systému.</p>
-            <div style="display:flex; gap:10px; justify-content: center;">
-                <button onclick="closeSaveConfirm()" style="background:transparent; color:#555; border:none; cursor:pointer;">SPÄŤ</button>
-                <button class="btn-save" onclick="processSave()">POTVRDIŤ ULOŽENIE</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="errorPage" class="overlay-page">
-        <div id="errorBox" class="auth-box" style="border-color: #ff4422;">
-            <h2 style="color: #ff4422;">PRÍSTUP ODMIETNUTÝ</h2>
-            <p style="color: #eee; margin-bottom: 30px;">Zadaný autorizačný kód je neplatný.</p>
-            <button class="btn-error" onclick="closeError()">SKÚSIŤ ZNOVU</button>
+            <h2 style="color: var(--primary); letter-spacing: 5px; margin-bottom: 10px;">SYNC CLOUD</h2>
+            <p style="color: #666; margin-bottom: 30px; font-size: 0.8rem; line-height: 1.6;">Všetky zmeny budú okamžite zapísané do hlavnej databázy LSPD.</p>
+            <button class="btn-save" onclick="processSave()">ODOSLAŤ DO DATABÁZY</button>
+            <p onclick="closeModals()" style="color:#333; cursor:pointer; margin-top:25px; font-size:0.65rem; font-weight: bold; letter-spacing: 2px;">SPÄŤ DO EDITORU</p>
         </div>
     </div>
 
     <button id="adminPanelTrigger" onclick="toggleEditMode()">AKTIVOVAŤ EDITÁCIU</button>
 
     <script>
+        // === KONFIGURÁCIA SUPABASE ===
+        const SUPABASE_URL = 'https://epkhwacccjinygbkjzhl.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwa2h3YWNjY2ppbnlnYmtqemhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzUxOTksImV4cCI6MjA4Nzg1MTE5OX0.PUBY7Rdnm6x2267ujci60_WoMTMBC0ztGdwpDGXWI-g';
         const ADMIN_CODE = "4242452354"; 
+
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
         let canEdit = false;
+
+        // AUTH FUNKCIE PREPOJENÉ S NAVBAROM
+        function toggleAuthModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { error } = await _supabase.auth.signInWithPassword({ email, password });
+            if (error) alert("CHYBA: " + error.message); 
+            else location.reload();
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            location.reload();
+        }
+
+        async function checkUser() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (user) {
+                document.getElementById('auth-trigger').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'block';
+            }
+        }
 
         const volackyStructure = [
             { id: "Staff-1", tag: "#4000" }, { id: "Staff-2", tag: "#4010" }, { id: "Staff-3", tag: "#4020" }, { id: "Staff-4", tag: "#4030" },
@@ -162,93 +373,108 @@
             { type: "divider" },
             { id: "Charlie-1", tag: "#4080" }, { id: "Charlie-2", tag: "#4090" }, { id: "Charlie-3", tag: "#4100" }, { id: "Charlie-4", tag: "#4110" },
             { type: "divider" },
-            { id: "Lincoln-20", tag: "#4120" }, { id: "Lincoln-21", tag: "#4130" }, { id: "Lincoln-22", tag: "#4140" }, { id: "Lincoln-23", tag: "#4150" },
-            { id: "Lincoln-24", tag: "#4160" }, { id: "Lincoln-25", tag: "#4170" }, { id: "Lincoln-26", tag: "#4180" }, { id: "Lincoln-27", tag: "#4190" },
-            { id: "Lincoln-28", tag: "#4200" }, { id: "Lincoln-29", tag: "#4210" }, { id: "Lincoln-30", tag: "#4220" }, { id: "Lincoln-31", tag: "#4230" },
-            { id: "Lincoln-32", tag: "#4240" }, { id: "Lincoln-33", tag: "#4250" }, { id: "Lincoln-34", tag: "#4260" }, { id: "Lincoln-35", tag: "#4270" },
-            { id: "Lincoln-36", tag: "#4280" }, { id: "Lincoln-37", tag: "#4290" }, { id: "Lincoln-38", tag: "#4300" }, { id: "Lincoln-39", tag: "#4310" },
-            { id: "Lincoln-40", tag: "#4320" },
+            { id: "Oscar-1", tag: "#4120" }, { id: "Oscar-2", tag: "#4130" },
             { type: "divider" },
-            { id: "TOM-1", tag: "#4330" }, { id: "TOM-2", tag: "#4340" }, { id: "TOM-3", tag: "#4350" }, { id: "TOM-4", tag: "#4360" },
-            { id: "TOM-5", tag: "#4370" }, { id: "TOM-6", tag: "#4380" }, { id: "TOM-7", tag: "#4490" }, { id: "TOM-8", tag: "#4400" },
-            { id: "TOM-9", tag: "#4410" }, { id: "TOM-10", tag: "#4420" }, { id: "TOM-11", tag: "#4430" }, { id: "TOM-12", tag: "#4440" },
-            { id: "TOM-13", tag: "#4450" }, { id: "TOM-14", tag: "#4460" }, { id: "TOM-15", tag: "#4470" }, { id: "TOM-16", tag: "#4480" },
-            { id: "TOM-17", tag: "#4490" }, { id: "TOM-18", tag: "#4500" }, { id: "TOM-19", tag: "#4510" }, { id: "TOM-20", tag: "#4520" }
+            { id: "Lincoln-20", tag: "#4140" }, { id: "Lincoln-21", tag: "#4150" }, { id: "Lincoln-22", tag: "#4160" }, { id: "Lincoln-23", tag: "#4170" },
+            { id: "Lincoln-24", tag: "#4180" }, { id: "Lincoln-25", tag: "#4190" }, { id: "Lincoln-26", tag: "#4200" }, { id: "Lincoln-27", tag: "#4210" },
+            { id: "Lincoln-28", tag: "#4220" }, { id: "Lincoln-29", tag: "#4230" }, { id: "Lincoln-30", tag: "#4240" }, { id: "Lincoln-31", tag: "#4250" },
+            { id: "Lincoln-32", tag: "#4260" }, { id: "Lincoln-33", tag: "#4270" }, { id: "Lincoln-34", tag: "#4280" }, { id: "Lincoln-35", tag: "#4290" },
+            { id: "Lincoln-36", tag: "#4300" }, { id: "Lincoln-37", tag: "#4310" }, { id: "Lincoln-38", tag: "#4320" }, { id: "Lincoln-39", tag: "#4330" },
+            { id: "Lincoln-40", tag: "#4340" },
+            { type: "divider" },
+            { id: "TOM-1", tag: "#4350" }, { id: "TOM-2", tag: "#4360" }, { id: "TOM-3", tag: "#4570" }, { id: "TOM-4", tag: "#4580" },
+            { id: "TOM-5", tag: "#4590" }, { id: "TOM-6", tag: "#4600" }, { id: "TOM-7", tag: "#4610" }, { id: "TOM-8", tag: "#4620" },
+            { id: "TOM-9", tag: "#4630" }, { id: "TOM-10", tag: "#4640" }, { id: "TOM-11", tag: "#4650" }, { id: "TOM-12", tag: "#4660" },
+            { id: "TOM-13", tag: "#4670" }, { id: "TOM-14", tag: "#4680" }, { id: "TOM-15", tag: "#4690" }, { id: "TOM-16", tag: "#4700" },
+            { id: "TOM-17", tag: "#4710" }, { id: "TOM-18", tag: "#4720" }, { id: "TOM-19", tag: "#4730" }, { id: "TOM-20", tag: "#4740" }
         ];
 
-        function renderTable() {
+        async function renderTable() {
             const card = document.getElementById('mainCard');
-            const savedData = JSON.parse(localStorage.getItem('lspd_volacky_data')) || {};
+            const { data, error } = await _supabase.from('volacky').select('*');
+            const cloudData = {};
+            if (data) data.forEach(row => cloudData[row.id] = row.name);
+
             card.innerHTML = "";
             volackyStructure.forEach(item => {
                 if(item.type === "divider") { 
-                    card.innerHTML += `<div class="divider">=======================================================</div>`; 
+                    card.innerHTML += `<div class="divider"></div>`; 
                     return; 
                 }
-                const savedName = savedData[item.id] || "";
+                const name = cloudData[item.id] || "";
                 const row = document.createElement('div');
                 row.className = "volacka-row";
                 row.innerHTML = `
                     <span class="volacka-id">${item.id}</span>
                     <span class="volacka-tag">${item.tag}</span>
-                    <div class="officer-name" data-id="${item.id}" contenteditable="${canEdit}">${savedName}</div>`;
+                    <div class="officer-name" data-id="${item.id}" contenteditable="${canEdit}">${name}</div>`;
                 card.appendChild(row);
             });
         }
 
-        function toggleEditMode() {
-            if (canEdit) { openSaveConfirm(); } else { openAdminAuth(); }
-        }
+        async function processSave() {
+            const divs = document.querySelectorAll('.officer-name');
+            const updates = [];
+            divs.forEach(div => {
+                updates.push({ id: div.getAttribute('data-id'), name: div.innerText.trim() });
+            });
 
-        function openAdminAuth() {
-            document.getElementById('adminPassField').value = "";
-            document.getElementById('adminAuthPage').style.display = 'flex';
-            document.getElementById('adminPassField').focus();
-        }
+            const { error } = await _supabase.from('volacky').upsert(updates);
 
-        function closeAdminAuth() { document.getElementById('adminAuthPage').style.display = 'none'; }
-
-        function verifyCode() {
-            if (document.getElementById('adminPassField').value === ADMIN_CODE) {
-                canEdit = true;
-                closeAdminAuth();
-                document.getElementById('adminPanelTrigger').innerText = "DEAKTIVOVAŤ A ULOŽIŤ";
-                document.getElementById('adminPanelTrigger').style.background = "#ff4422";
-                document.getElementById('adminPanelTrigger').style.animation = "none";
-                renderTable();
+            if (error) {
+                alert("Cloud Sync Error: " + error.message);
             } else {
-                closeAdminAuth();
-                document.getElementById('errorPage').style.display = 'flex';
-                document.getElementById('errorBox').classList.add('shake-anim');
-                setTimeout(() => { document.getElementById('errorBox').classList.remove('shake-anim'); }, 500);
+                canEdit = false;
+                const btn = document.getElementById('adminPanelTrigger');
+                btn.innerText = "AKTIVOVAŤ EDITÁCIU";
+                btn.style.background = "var(--warning)";
+                btn.style.color = "black";
+                document.getElementById('saveConfirmPage').style.display = 'none';
+                renderTable();
             }
         }
 
-        function openSaveConfirm() { document.getElementById('saveConfirmPage').style.display = 'flex'; }
-        function closeSaveConfirm() { document.getElementById('saveConfirmPage').style.display = 'none'; }
-
-        function closeError() {
-            document.getElementById('errorPage').style.display = 'none';
-            openAdminAuth();
+        function toggleEditMode() {
+            if (canEdit) document.getElementById('saveConfirmPage').style.display = 'flex';
+            else {
+                document.getElementById('adminPassField').value = "";
+                document.getElementById('adminAuthPage').style.display = 'flex';
+            }
         }
 
-        function processSave() {
-            const rows = document.querySelectorAll('.officer-name');
-            const dataToSave = {};
-            rows.forEach(div => {
-                dataToSave[div.getAttribute('data-id')] = div.innerText.trim();
-            });
-            localStorage.setItem('lspd_volacky_data', JSON.stringify(dataToSave));
-            canEdit = false;
-            document.getElementById('adminPanelTrigger').innerText = "AKTIVOVAŤ EDITÁCIU";
-            document.getElementById('adminPanelTrigger').style.background = "#ffcc00";
-            document.getElementById('adminPanelTrigger').style.animation = "pulseAdmin 2s infinite";
-            closeSaveConfirm();
+        function verifyCode() {
+            const field = document.getElementById('adminPassField');
+            const box = document.getElementById('authBox');
+            
+            if (field.value === ADMIN_CODE) {
+                canEdit = true;
+                document.getElementById('adminAuthPage').style.display = 'none';
+                const btn = document.getElementById('adminPanelTrigger');
+                btn.innerText = "ULOŽIŤ A SYNCHRONIZOVAŤ";
+                btn.style.background = "var(--danger)";
+                btn.style.color = "white";
+                renderTable();
+            } else {
+                box.classList.add('shake');
+                field.style.borderColor = 'var(--danger)';
+                setTimeout(() => { 
+                    box.classList.remove('shake'); 
+                    field.style.borderColor = '#1a1a1a';
+                    field.value = "";
+                }, 400);
+            }
+        }
+
+        function closeModals() {
+            document.getElementById('adminAuthPage').style.display = 'none';
+            document.getElementById('saveConfirmPage').style.display = 'none';
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        window.onload = () => {
             renderTable();
-        }
-
-        window.onload = renderTable;
+            checkUser();
+        };
     </script>
 </body>
-
 </html>

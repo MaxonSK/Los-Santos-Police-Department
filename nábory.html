@@ -6,8 +6,249 @@
     <title>LSPD | Nábory</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* --- POVODNÝ NAVBAR A ZÁKLAD (PONECHANÉ) --- */
+        nav {
+            background: #000 !important; 
+            border-bottom: 2px solid #00aaff !important; 
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            gap: 40px; 
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 20px;
+            justify-content: center; 
+        }
+
+        .nav-container a {
+            text-decoration: none;
+            color: #888 !important; 
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .nav-container a:hover, .nav-container a.active {
+            color: #00aaff !important;
+            text-shadow: 0 0 10px rgba(0, 170, 255, 0.7);
+        }
+
+        .auth-box {
+            position: absolute;
+            right: 20px;
+        }
+
+        .glow-text {
+            animation: insaneGlow 3s infinite alternate;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+
+        @keyframes insaneGlow {
+            from { text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff; }
+            to { text-shadow: 0 0 20px #00aaff, 0 0 40px #00aaff, 0 0 60px #0055ff; transform: scale(1.02); }
+        }
+
+        .card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0, 170, 255, 0.1) !important;
+            background: rgba(15, 15, 15, 0.6) !important;
+            backdrop-filter: blur(5px);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: #00aaff !important;
+            box-shadow: 0 10px 40px rgba(0, 170, 255, 0.3);
+        }
+
+        .btn-terminal {
+            border: 1px solid #00aaff !important;
+            background: transparent !important;
+            color: #00aaff !important;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            padding: 12px 25px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-terminal:hover {
+            background: #00aaff !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px #00aaff;
+        }
+
+        .btn-logout {
+            border: 1px solid #ff4444 !important;
+            color: #ff4444 !important;
+            background: transparent !important;
+            transition: all 0.3s ease;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        .btn-logout:hover {
+            background: #ff4444 !important;
+            color: #fff !important;
+            box-shadow: 0 0 20px #ff4444;
+        }
+
+        body { opacity: 1; transition: opacity 0.5s ease; }
+        .fade-in-active { animation: pageEnter 0.8s ease-out; }
+        @keyframes pageEnter {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- PRIDANÉ: ROZŠÍRENÉ TERMINÁL EFEKTY Z PRVÉHO KÓDU --- */
+        .auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85) !important;
+            backdrop-filter: blur(15px) !important; /* Silnejší blur pozadia */
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            transition: background 0.3s ease;
+        }
+
+        .auth-card {
+            background: #0a0a0a !important;
+            border: 1px solid #00aaff !important;
+            box-shadow: inset 0 0 15px rgba(0, 170, 255, 0.2), 0 0 30px rgba(0, 0, 0, 1);
+            padding: 40px !important;
+            width: 450px;
+            text-align: center;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden; /* Nutné pre scanline */
+        }
+
+        /* Scanline Animácia */
+        .auth-card::after {
+            content: "";
+            position: absolute;
+            top: -100%; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(transparent, rgba(0, 170, 255, 0.05), transparent);
+            animation: scanline 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { top: -100%; }
+            100% { top: 100%; }
+        }
+
+        .auth-card h2 {
+            color: #fff;
+            font-family: 'Courier New', monospace !important;
+            letter-spacing: 10px !important;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(0, 170, 255, 0.8) !important;
+        }
+
+        .terminal-status {
+            font-size: 11px;
+            color: #00aaff;
+            font-family: monospace;
+            margin-bottom: 20px;
+            text-align: left;
+            display: block;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .auth-card input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(0, 170, 255, 0.3) !important;
+            padding: 15px;
+            color: #fff !important;
+            margin-bottom: 15px;
+            font-family: monospace;
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .auth-card input:focus {
+            border-color: #00aaff !important;
+            background: rgba(0, 170, 255, 0.05) !important;
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+        }
+
+        .btn-main {
+            width: 100%;
+            background: transparent !important;
+            border: 1px solid #00aaff !important;
+            color: #00aaff !important;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .btn-main:hover {
+            background: #00aaff !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+        }
+
+        .btn-close {
+            background: none !important;
+            border: none !important;
+            color: #555 !important;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        .btn-close:hover {
+            color: #ff4444 !important;
+        }
+
+        /* --- EFEKTY CHYBY --- */
+        @keyframes terminalShake {
+            0% { transform: translate(0,0); }
+            10% { transform: translate(-5px, -2px); }
+            20% { transform: translate(5px, 2px); }
+            30% { transform: translate(-5px, 0px); }
+            40% { transform: translate(5px, -1px); }
+            50% { transform: translate(-2px, 2px); }
+            100% { transform: translate(0,0); }
+        }
+
+        .error-shake {
+            animation: terminalShake 0.4s ease-in-out !important;
+            border-color: #ff4444 !important;
+            box-shadow: 0 0 50px rgba(255, 68, 68, 0.4) !important;
+        }
+
+        .error-overlay {
+            background: rgba(255, 0, 0, 0.15) !important;
+        }
+    </style>
 </head>
-<body>
+<body class="fade-in-active">
 
 <nav>
     <div class="nav-container">
@@ -23,6 +264,7 @@
         </div>
     </div>
 </nav>
+
 <div class="status-container">
     <span class="status-text">Status náborov:</span>
     <span class="status-badge open">OTVORENÉ</span>
@@ -38,9 +280,7 @@
         <div class="card" style="max-width: 600px; text-align: center; width: 100%;">
             <h2 class="section-title">Informácie o nábore</h2>
             <p style="margin-bottom: 20px;">Aktuálne hľadáme motivovaných kandidátov do akadémie LSPD. Ak spĺňaš podmienky, neváhaj a podaj si prihlášku.</p>
-            <div style="text align: left; background: rgba(0,0,0,0.2); color: green; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
-
-            </div>
+            
             <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 5px; margin-bottom: 30px;">
                 <p>• Minimálny vek 21 rokov</p>
                 <p>• Čistý register trestov</p>
@@ -49,19 +289,20 @@
             </div>
 
             <button onclick="window.location.href='formular.html'" class="btn-terminal">
-    VYPLNIŤ PRIHLÁŠKU
-</button>
+                VYPLNIŤ PRIHLÁŠKU
+            </button>
         </div>
     </div>
 </div>
 
 <div id="auth-modal" class="auth-overlay" style="display: none;">
     <div class="auth-card">
-        <h2>POLICE TERMINAL</h2>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Heslo">
-        <button class="btn-main" onclick="handleAuth()">VSTÚPIŤ</button>
-        <button class="btn-close" onclick="toggleAuth()">ZAVRIEŤ</button>
+        <h2>LSPD TERMINAL</h2>
+        <span class="terminal-status">> OČAKÁVAM IDENTIFIKÁCIU...</span>
+        <input type="email" id="email" placeholder="EMAIL ADRESA">
+        <input type="password" id="password" placeholder="SYSTÉMOVÉ HESLO">
+        <button class="btn-main" onclick="handleAuth()">OVERIŤ PRÍSTUP</button>
+        <button class="btn-close" onclick="toggleAuth()">ZRUŠIŤ</button>
     </div>
 </div>
 
@@ -78,8 +319,31 @@
     async function handleAuth() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const status = document.querySelector('.terminal-status');
+        const modal = document.getElementById('auth-modal');
+        const card = document.querySelector('.auth-card');
+
+        status.innerText = "> OVERUJEM DATABÁZU...";
+        status.style.color = "#ffcc00";
+
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) alert(error.message); else location.reload();
+        
+        if (error) {
+            status.innerText = "> PRÍSTUP ZAMIETNUTÝ! NEPLATNÉ ÚDAJE.";
+            status.style.color = "#ff4444";
+            
+            modal.classList.add('error-overlay');
+            card.classList.add('error-shake');
+
+            setTimeout(() => {
+                modal.classList.remove('error-overlay');
+                card.classList.remove('error-shake');
+            }, 500);
+        } else {
+            status.innerText = "> PRÍSTUP POVOLENÝ. PRIHLASUJEM...";
+            status.style.color = "#00ff00";
+            setTimeout(() => location.reload(), 800);
+        }
     }
 
     async function handleLogout() {
@@ -100,39 +364,25 @@
 </script>
 
 <script>
-    // 1. Efekt pri načítaní stránky (Fade In)
     window.addEventListener('DOMContentLoaded', () => {
-        document.body.classList.add('fade-in');
+        document.body.classList.add('fade-in-active');
     });
 
-    // 2. Efekt pri odchode zo stránky (Fade Out)
-    // Zachytí všetky kliknutia na odkazy
     document.querySelectorAll('a, button').forEach(element => {
         element.addEventListener('click', function(e) {
-            // Zistíme, kam odkaz smeruje (buď cez href alebo onclick)
-            let destination = this.href || (this.getAttribute('onclick') ? this.getAttribute('onclick').match(/'([^']+)'/)[1] : null);
+            let destination = this.href || (this.getAttribute('onclick') && this.getAttribute('onclick').includes('window.location.href') ? this.getAttribute('onclick').match(/'([^']+)'/)[1] : null);
             
-            if (destination && !destination.startsWith('#')) {
-                e.preventDefault(); // Zastavíme okamžitý skok
-                document.body.style.opacity = '0'; // Stránka stmavne
-                
+            if (destination && !destination.startsWith('#') && !this.id.includes('auth')) {
+                e.preventDefault();
+                document.body.style.opacity = '0';
                 setTimeout(() => {
-                    window.location.href = destination; // Presmerujeme po animácii
-                }, 500); // Čas musí sedieť s transition v CSS (0.5s)
+                    window.location.href = destination;
+                }, 500);
             }
         });
     });
 </script>
-<script>
-    window.addEventListener('load', function() {
-        const loader = document.getElementById('loader');
-        // Pridáme mierne oneskorenie (napr. 800ms), aby si užívateľ efekt všimol
-        setTimeout(() => {
-            loader.classList.add('hidden');
-        }, 800);
-    });
-</script>
-</body>
+
 <div id="loader">
     <div class="terminal-loader">
         <div class="spinner"></div>
@@ -140,4 +390,14 @@
         <span class="status">PRIPÁJANIE K DATABÁZE LSPD...</span>
     </div>
 </div>
+
+<script>
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('loader');
+        setTimeout(() => {
+            loader.classList.add('hidden');
+        }, 800);
+    });
+</script>
+</body>
 </html>
