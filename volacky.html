@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSPD - Volačky</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ZÁKLADNÝ ŠTÝL STRÁNKY */
+        body {
+            background: radial-gradient(circle at 50% 0%, #0a192f 0%, #050505 70%) no-repeat fixed !important;
+            color: white; margin: 0; font-family: 'Segoe UI', sans-serif;
+            transition: 0.5s;
+        }
+
+        .navbar {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            background: rgba(10, 10, 10, 0.95); display: flex;
+            justify-content: center; align-items: center; padding: 15px 0;
+            border-bottom: 2px solid #00aaff; backdrop-filter: blur(10px);
+        }
+
+        .nav-links { display: flex; list-style: none; gap: 30px; padding: 0; margin: 0; }
+        .nav-links a { color: #888; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+        .nav-links a.active { color: #00aaff; text-shadow: 0 0 10px rgba(0, 170, 255, 0.5); }
+
+        #authBtn {
+            position: absolute; right: 40px; background: transparent;
+            border: 1px solid #00aaff; color: #00aaff; padding: 8px 20px;
+            cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase;
+        }
+
+        .container { padding: 140px 20px 60px; max-width: 900px; margin: 0 auto; transition: 0.5s; }
+
+        .volacky-card {
+            background: rgba(13, 13, 13, 0.9); border-left: 5px solid #00aaff;
+            padding: 30px; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+
+        .volacka-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'Consolas', monospace; }
+        .volacka-id { color: #00aaff; width: 140px; font-weight: bold; }
+        .volacka-tag { color: #555; margin-right: 15px; }
+        .officer-name { flex-grow: 1; color: #eee; padding: 5px 10px; outline: none; border-radius: 4px; }
+        .officer-name[contenteditable="true"]:focus { background: rgba(0, 170, 255, 0.1); color: #00aaff; }
+
+        .divider { text-align: center; color: #222; margin: 20px 0; font-weight: bold; letter-spacing: 3px; }
+
+        /* FULLSCREEN ADMIN PANEL (STAV STRÁNKY) */
+        #adminAuthPage {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; display: none; /* Skryté na začiatku */
+            justify-content: center; align-items: center; z-index: 2000;
+            flex-direction: column;
+        }
+
+        .auth-box {
+            background: #121826; border-radius: 25px; padding: 50px;
+            width: 400px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .auth-icon { font-size: 50px; margin-bottom: 20px; filter: drop-shadow(0 0 10px #00aaff); }
+        .auth-box h2 { letter-spacing: 4px; font-weight: 800; margin-bottom: 10px; }
+        .auth-box p { color: #556080; font-size: 0.85rem; margin-bottom: 30px; text-transform: uppercase; }
+
+        #adminPassField {
+            width: 100%; background: #1a2235; border: none; padding: 18px;
+            border-radius: 12px; color: white; text-align: center; font-size: 1.5rem;
+            letter-spacing: 8px; margin-bottom: 30px; outline: none;
+            box-sizing: border-box; transition: 0.3s;
+        }
+        #adminPassField:focus { box-shadow: 0 0 20px rgba(0, 170, 255, 0.3); background: #1f2a44; }
+
+        .auth-btns { display: flex; gap: 15px; justify-content: center; width: 100%; }
+        .btn-back { background: transparent; border: none; color: #556080; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+        .btn-confirm { 
+            background: #ff4422; border: none; color: white; padding: 15px 40px; 
+            border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; flex-grow: 1;
+        }
+        .btn-confirm:hover { background: #ff5533; transform: scale(1.02); }
+
+        #adminPanelTrigger {
+            position: fixed; bottom: 30px; right: 30px; background: #ffcc00;
+            color: black; border: none; padding: 15px 30px; border-radius: 50px;
+            font-weight: bold; cursor: pointer; display: none; z-index: 500;
+            box-shadow: 0 5px 20px rgba(255, 204, 0, 0.3); transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="mainNav">
+        <ul class="nav-links">
+            <li><a href="index.html">DOMOV</a></li>
+            <li><a href="nabory.html">NÁBORY</a></li>
+            <li><a href="patroly.html">PATROLY</a></li>
+            <li><a href="volacky.html" class="active">VOLAČKY</a></li>
+            <li><a href="https://law-olive.vercel.app/" target="_blank">ZÁKONNÍK</a></li>
+        </ul>
+        <button id="authBtn" onclick="handleAuth()">PRIHLÁSIŤ</button>
+    </nav>
+
+    <div class="container" id="mainContent">
+        <h1 style="text-transform: uppercase; letter-spacing: 2px;">Volačky LSPD</h1>
+        <div class="volacky-card" id="mainCard">Načítavam systém...</div>
+        
+        <div style="margin-top:20px; color:#555; font-style:italic;">
+            dvaja na patrolu sú - ADAM | traja na patrole sú - JUNIOR
+        </div>
+    </div>
+
+    <div id="adminAuthPage">
+        <div class="auth-box">
+            <div class="auth-icon">🛡️</div>
+            <h2>AUTORIZÁCIA</h2>
+            <p>ZADAJTE PRÍSTUPOVÝ KÓD PRE DUTY</p>
+            <input type="password" id="adminPassField" placeholder="••••••" maxlength="10">
+            <div class="auth-btns">
+                <button class="btn-back" onclick="closeAdminAuth()">ZRUŠIŤ</button>
+                <button class="btn-confirm" onclick="verifyCode()">AKTIVOVAŤ</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="adminPanelTrigger" onclick="openAdminAuth()">AKTIVOVAŤ EDITÁCIU</button>
+
+    <script>
+        const SUPABASE_URL = 'https://epkhwacccjinygbkjzhl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwa2h3YWNjY2ppbnlnYmtqemhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzUxOTksImV4cCI6MjA4Nzg1MTE5OX0.PUBY7Rdnm6x2267ujci60_WoMTMBC0ztGdwpDGXWI-g';
+        const ADMIN_CODE = "4242452354"; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let canEdit = false;
+
+        const volackyStructure = [
+            { id: "Staff-1", tag: "#4000" }, { id: "Staff-2", tag: "#4010" }, { id: "Staff-3", tag: "#4020" }, { id: "Staff-4", tag: "#4030" },
+            { type: "divider" },
+            { id: "Nora-1", tag: "#4040" }, { id: "Nora-2", tag: "#4050" }, { id: "William-1", tag: "#4060" }, { id: "William-2", tag: "#4070" },
+            { type: "divider" },
+            { id: "Charlie-1", tag: "#4080" }, { id: "Charlie-2", tag: "#4090" }, { id: "Charlie-3", tag: "#4100" }, { id: "Charlie-4", tag: "#4110" },
+            { type: "divider" }, { id: "Oscar-2", tag: "" }, { id: "Oscar-1", tag: "" }, { type: "divider" }
+        ];
+        for(let i=20; i<=40; i++) volackyStructure.push({ id: `Lincoln-${i}`, tag: `#${4140 + (i-20)*10}` });
+        volackyStructure.push({ type: "divider" });
+        for(let i=1; i<=20; i++) {
+            let tag = i <= 2 ? `#${4350 + (i-1)*10}` : `#${4570 + (i-3)*10}`;
+            volackyStructure.push({ id: `TOM-${i}`, tag: tag });
+        }
+
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                document.getElementById('authBtn').innerText = "ODHLÁSIŤ";
+                document.getElementById('adminPanelTrigger').style.display = "block";
+            }
+            renderTable();
+        }
+
+        async function renderTable() {
+            const card = document.getElementById('mainCard');
+            const { data: names } = await supabaseClient.from('volacky').select('*');
+            card.innerHTML = "";
+            volackyStructure.forEach(item => {
+                if(item.type === "divider") { card.innerHTML += `<div class="divider">=======================================================</div>`; return; }
+                const saved = names?.find(n => n.id === item.id);
+                const row = document.createElement('div');
+                row.className = "volacka-row";
+                row.innerHTML = `<span class="volacka-id">${item.id}</span><span class="volacka-tag">${item.tag}</span><div class="officer-name" contenteditable="${canEdit}" onblur="saveToDb('${item.id}', this.innerText)">${saved ? saved.officer_name : ""}</div>`;
+                card.appendChild(row);
+            });
+        }
+
+        function openAdminAuth() {
+            if (canEdit) {
+                canEdit = false;
+                document.getElementById('adminPanelTrigger').style.background = "#ffcc00";
+                document.getElementById('adminPanelTrigger').innerText = "AKTIVOVAŤ EDITÁCIU";
+                renderTable();
+                return;
+            }
+            
+            // Vymaže políčko pre kód pri každom novom otvorení
+            document.getElementById('adminPassField').value = "";
+            
+            document.getElementById('adminAuthPage').style.display = 'flex';
+            document.getElementById('mainContent').style.filter = 'blur(10px)';
+            document.getElementById('mainNav').style.filter = 'blur(10px)';
+            document.getElementById('adminPassField').focus();
+        }
+
+        function closeAdminAuth() {
+            document.getElementById('adminAuthPage').style.display = 'none';
+            document.getElementById('mainContent').style.filter = 'none';
+            document.getElementById('mainNav').style.filter = 'none';
+        }
+
+        function verifyCode() {
+            if (document.getElementById('adminPassField').value === ADMIN_CODE) {
+                canEdit = true;
+                closeAdminAuth();
+                document.getElementById('adminPanelTrigger').style.background = "#ff4422";
+                document.getElementById('adminPanelTrigger').innerText = "DEAKTIVOVAŤ EDITÁCIU";
+                renderTable();
+            } else {
+                alert("NESPRÁVNY KÓD!");
+                document.getElementById('adminPassField').value = "";
+            }
+        }
+
+        async function saveToDb(id, val) { if(canEdit) await supabaseClient.from('volacky').upsert({ id: id, officer_name: val.trim() }); }
+        
+        async function handleAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) { await supabaseClient.auth.signOut(); window.location.reload(); }
+            else { window.location.href = "index.html"; }
+        }
+
+        window.onload = checkSession;
+    </script>
+</body>
+</html>
