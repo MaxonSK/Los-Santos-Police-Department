@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSPD - Profesionálny Testovací Systém</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #00aaff;
+            --primary-glow: rgba(0, 170, 255, 0.6);
+            --danger: #ff4422;
+            --warning: #ffaa00;
+            --bg-dark: #020408;
+            --surface: #0a0e14;
+            --success: #00ff88;
+            --accent-orange: #ff8800;
+        }
+
+        body { 
+            background: var(--bg-dark); 
+            color: white; margin: 0; font-family: 'Inter', sans-serif; overflow-x: hidden;
+        }
+
+        /* --- SYMETRICKÝ NAVBAR --- */
+        .navbar { 
+            position: fixed; top: 0; width: 100%; z-index: 1000; 
+            background: #000; 
+            display: grid;
+            grid-template-columns: 1fr auto 1fr; 
+            align-items: center;
+            border-bottom: 2px solid var(--primary); height: 80px; 
+            padding: 0 50px; box-sizing: border-box;
+        }
+
+        .nav-brand { font-weight: 900; letter-spacing: 5px; color: var(--primary); font-size: 1.5rem; }
+        
+        .nav-links { 
+            display: flex; list-style: none; gap: 10px; padding: 0; margin: 0; 
+            justify-content: center;
+        }
+
+        .nav-links li { position: relative; }
+        .nav-links a { 
+            position: relative;
+            color: white; text-decoration: none; font-weight: 700; font-size: 0.8rem; 
+            letter-spacing: 2px; transition: 0.3s ease; padding: 10px 15px; 
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-links a:hover { 
+            color: var(--primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 80%;
+        }
+
+        .nav-links a.active { color: var(--primary); }
+        .nav-links a.active::after { width: 80%; }
+
+        .nav-auth { display: flex; justify-content: flex-end; }
+
+        /* --- ZÁKAZ VÝSTUPU Z MÓDU --- */
+        .locked-nav { pointer-events: none; opacity: 0.5; }
+
+        /* --- ANIMÁCIE PRECHODOV --- */
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.39, 0.575, 0.565, 1.000) both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .lock-screen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; text-align: center; margin-top: -40px;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 3px solid rgba(0,170,255,0.1);
+            border-top: 3px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-top: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .settings-gear {
+            position: fixed; bottom: 20px; right: 20px; 
+            background: rgba(0,0,0,0.5); border: 1px solid var(--accent-orange); 
+            color: var(--accent-orange); cursor: pointer; 
+            font-size: 1.2rem; transition: 0.4s;
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+            z-index: 999;
+        }
+        .settings-gear:hover {
+            background: var(--accent-orange);
+            color: black;
+            box-shadow: 0 0 20px var(--accent-orange);
+            transform: rotate(90deg);
+        }
+
+        .access-denied { animation: shake 0.5s both; color: var(--danger) !important; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); display: none; justify-content: center; 
+            align-items: center; z-index: 9999; backdrop-filter: blur(10px);
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        
+        .modal-card {
+            background: var(--surface); padding: 40px; border: 1px solid var(--primary);
+            border-radius: 15px; text-align: center; width: 400px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.show .modal-card { transform: scale(1); }
+        
+        #adminCodeModal .modal-card {
+            border: 1px solid var(--warning);
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #adminCodeModal .modal-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--warning), transparent);
+            animation: scanline 2s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .terminal-input {
+            background: #000 !important; border: 1px solid #333 !important; 
+            font-family: 'JetBrains Mono', monospace; color: var(--primary); 
+            padding: 12px; border-radius: 5px; width: 100%; box-sizing: border-box; margin-bottom: 10px;
+            transition: 0.3s;
+        }
+        .terminal-input:focus {
+            border-color: var(--primary) !important;
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+        }
+
+        .btn { padding: 12px 25px; border-radius: 4px; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: black; }
+        .btn-primary:hover { background: white; box-shadow: 0 0 15px var(--primary-glow); transform: scale(1.02); }
+
+        .test-card-link { background: #0d1117; border: 1px solid #222; padding: 25px; border-radius: 10px; cursor: pointer; transition: 0.3s; position: relative; }
+        .test-card-link:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0, 170, 255, 0.1); }
+
+        .container { padding: 120px 20px; max-width: 1100px; margin: 0 auto; }
+        .hidden-content { display: none; }
+        #sysNotify { position: fixed; top: 100px; right: -400px; width: 300px; background: var(--surface); border-left: 5px solid var(--success); padding: 20px; z-index: 10000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #sysNotify.show { right: 20px; }
+        #adminPanel, #testExecution { display: none; }
+
+        /* Delete elements in admin */
+        .admin-test-item {
+            background: #050505; border: 1px solid #222; padding: 15px; margin-top: 10px; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* --- NOVÉ: PEKNÉ POTVRDZOVACIE OKNO --- */
+        .confirm-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; justify-content: center;
+            align-items: center; z-index: 100000; backdrop-filter: blur(15px);
+        }
+        .confirm-card {
+            background: #0a0e14; border: 2px solid var(--danger);
+            padding: 30px; border-radius: 10px; text-align: center;
+            width: 350px; box-shadow: 0 0 50px rgba(255, 68, 34, 0.3);
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.5) translateY(50px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .confirm-card h2 { color: var(--danger); margin-top: 0; letter-spacing: 2px; }
+        .confirm-card p { color: #ccc; font-size: 0.9rem; margin-bottom: 25px; }
+        .confirm-btns { display: flex; gap: 10px; }
+        .confirm-btns button { flex: 1; }
+    </style>
+</head>
+<body>
+
+    <div id="sysNotify">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i class="fas fa-info-circle" id="notifyIcon"></i>
+            <span id="notifyMsg">SYSTÉM OK</span>
+        </div>
+    </div>
+
+    <div id="lspdConfirmModal" class="confirm-overlay">
+        <div class="confirm-card">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
+            <h2>POTVRDIŤ AKCIU</h2>
+            <p id="lspdConfirmText">Naozaj chcete vymazať tento prvok?</p>
+            <div class="confirm-btns">
+                <button class="btn" style="background: #222; color: #fff;" onclick="closeConfirm()">ZRUŠIŤ</button>
+                <button class="btn" id="lspdConfirmBtn" style="background: var(--danger); color: #fff;">VYMAZAŤ</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar" id="mainNavbar">
+        <div class="nav-brand">LSPD</div>
+        <ul class="nav-links">
+            <li><a href="index.html">DOMOV</a></li>
+            <li><a href="nábory.html" class="hidden-content">NÁBORY</a></li>
+            <li><a href="testy.html" class="hidden-content">PATROLY</a></li>
+            <li><a href="volacky.html" class="hidden-content">VOLAČKY</a></li>
+            <li><a href="testy.html" class="active hidden-content">TESTY</a></li>
+            <li><a href="https://law-olive.vercel.app/" class="hidden-content">ZAKONNÍK</a></li>
+        </ul>
+        <div class="nav-auth">
+            <button id="navLoginBtn" class="btn btn-primary" onclick="openModal('loginModal')">LOGIN</button>
+            <button id="navLogoutBtn" class="btn" style="display:none; background: var(--danger); color:white;" onclick="logoutAdmin()">LOGOUT</button>
+        </div>
+    </nav>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="color: var(--primary); letter-spacing: 2px;">PRIHLÁSENIE</h2>
+            <input type="email" id="adminEmailInput" class="terminal-input" placeholder="EMAIL">
+            <input type="password" id="adminPassInput" class="terminal-input" placeholder="HESLO">
+            <button class="btn btn-primary" style="width:100%" onclick="loginAdmin()">POTVRDIŤ</button>
+            <button class="btn" style="background:none; color:gray;" onclick="closeModal('loginModal')">ZRUŠIŤ</button>
+        </div>
+    </div>
+
+    <div id="testStartModal" class="modal-overlay">
+        <div id="startCard" class="modal-card">
+            <h2 id="modalTestTitle" style="color: var(--primary);">SPUSTIŤ TEST</h2>
+            <p id="modalTestInfo" style="font-size: 0.8rem; color: #888;"></p>
+            <div id="testActionArea">
+                <input type="text" id="userNameInput" class="terminal-input" placeholder="MENO A SLUŽOBNÉ ČÍSLO">
+                <button class="btn btn-primary" style="width:100%" onclick="confirmStartTest()">ZAČAŤ TESTOVANIE</button>
+            </div>
+            <button class="btn" id="cancelTestBtn" style="background:none; color:gray; margin-top: 10px;" onclick="closeModal('testStartModal')">ZRUŠIŤ</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="lock-screen" id="lockScreen">
+            <i class="fas fa-shield-alt" style="font-size: 5rem; color: #111;"></i>
+            <h1 style="color: #111; letter-spacing: 5px; margin: 10px 0;">PRÍSTUP ZAMKNUTÝ</h1>
+            <div class="spinner"></div>
+        </div>
+
+        <div id="mainView" class="hidden-content">
+            <h1 style="text-align: center; letter-spacing: 5px;">DOSTUPNÉ <span style="color: var(--primary)">TESTY</span></h1>
+            <select id="catSelectMain" onchange="showTestsForCategory()" class="terminal-input" style="max-width: 400px; margin: 0 auto 40px; display: block;"></select>
+            <div id="testList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+        </div>
+
+        <div id="testExecution">
+            <div id="timer" style="position: sticky; top: 100px; background: var(--danger); padding: 15px; text-align: center; font-weight: 900; border-radius: 5px; z-index: 100; margin-bottom: 20px; font-family: 'JetBrains Mono';">00:00:00</div>
+            <div id="testContent"></div>
+            <button class="btn btn-primary" onclick="submitTest()" style="width: 100%; margin-top: 40px; padding: 20px;">ODOVZDAŤ TEST</button>
+        </div>
+
+        <div id="adminPanel" class="fade-in">
+            <button class="btn" onclick="closeAdminPanel()" style="background: var(--danger); color: white; margin-bottom: 20px; width: 100%; letter-spacing: 2px;">
+                <i class="fas fa-times-circle"></i> ZAVRIEŤ EDITOR SYSTÉMU
+            </button>
+
+            <div class="test-card-link" style="cursor: default; border-color: var(--warning);">
+                <h2 style="color: var(--warning); letter-spacing: 2px;">EDITOR SYSTÉMU</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="border-right: 1px solid #222; padding-right: 20px;">
+                        <label>SPRAVOVAŤ SEKCIU</label>
+                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                            <input type="text" id="newCatName" class="terminal-input" placeholder="Názov novej sekcie" style="margin:0;">
+                            <button class="btn" onclick="addCategory()" style="background: var(--success); color:black; padding: 0 15px;">+</button>
+                        </div>
+                        <label>VYBERTE SEKCIU PRE ÚPRAVU / ZMAZANIE</label>
+                        <select id="adminCatSelect" class="terminal-input" onchange="renderAdminTestList()"></select>
+                        <button class="btn" onclick="deleteCategory()" style="background: var(--danger); color:white; width:100%; font-size: 0.7rem;">ODSTRÁNIŤ VYBRANÚ SEKCIU</button>
+                    </div>
+
+                    <div>
+                        <label>KONFIGURÁCIA NOVÉHO TESTU</label>
+                        <input type="text" id="testTitle" class="terminal-input" placeholder="Názov testu">
+                        <div style="display: flex; gap: 5px;">
+                             <div style="flex:1">
+                                <label style="font-size: 0.6rem; color: var(--warning);">ČAS (HH:MM:SS)</label>
+                                <input type="time" id="testDuration" class="terminal-input" step="1" value="00:30:00">
+                             </div>
+                             <div style="flex:1">
+                                <label style="font-size: 0.6rem; color: var(--warning);">POKUSY</label>
+                                <input type="number" id="testAttempts" class="terminal-input" value="1">
+                             </div>
+                        </div>
+                        <div id="questionsBuilder"></div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button class="btn" onclick="addQuestion('text')" style="background:#222; color:white; flex:1; font-size: 0.7rem;">+ TEXT</button>
+                            <button class="btn" onclick="addQuestion('choice')" style="background:#222; color:white; flex:1; font-size: 0.7rem;">+ MOŽNOSTI</button>
+                        </div>
+                        <button class="btn" onclick="saveTestToDB()" style="width: 100%; margin-top: 20px; background: var(--success); color: black;">ULOŽIŤ NOVÝ TEST</button>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #222; margin: 30px 0;">
+                
+                <h3 style="color: var(--primary);">EXISTUJÚCE TESTY V TEJTO SEKCII</h3>
+                <div id="adminExistingTests"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminCodeModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-user-shield" style="font-size: 3rem; color: var(--warning); margin-bottom: 15px;"></i>
+                <h2 style="color: var(--warning); letter-spacing: 3px; margin: 0;">ADMIN KONZOLA</h2>
+                <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">VYŽADUJE SA AUTORIZÁCIA</p>
+            </div>
+            <input type="password" id="adminCodeInput" class="terminal-input" placeholder="ENTER ACCESS KEY" style="text-align: center; border-color: #444 !important; font-size: 1.2rem; letter-spacing: 5px;">
+            <button class="btn" style="background:var(--warning); width:100%; color: black;" onclick="checkAdminCode()">VSTÚPIŤ</button>
+            <button class="btn" style="background:none; color:gray; font-size: 0.8rem;" onclick="closeModal('adminCodeModal')">ZAVRIEŤ</button>
+        </div>
+    </div>
+
+    <button onclick="openModal('adminCodeModal')" class="settings-gear"><i class="fas fa-cog"></i></button>
+
+    <script>
+        const SUPABASE_URL = 'https://epkhwacccjinygbkjzhl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwa2h3YWNjY2ppbnlnYmtqemhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzUxOTksImV4cCI6MjA4Nzg1MTE5OX0.PUBY7Rdnm6x2267ujci60_WoMTMBC0ztGdwpDGXWI-g';
+        const WEBHOOK = 'https://discord.com/api/webhooks/1478385074448896052/Yj2u1_ANK9qkfW0_qrmX9qZqUY3vkt1tPOY5ss88Dz_BChswrRP3lzrSKnNX-0X6mQIt';
+        const ADMIN_SECRET_CODE = "4242452354"; 
+
+        const { createClient } = supabase;
+        const _db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let testData = { categories: [] };
+        let activeTest = null;
+        let timerInterval;
+        let currentUser = "";
+        let selectedTestRef = null;
+
+        // --- NOVÉ: LOGIKA PRE PEKNÉ POTVRDZOVANIE ---
+        function openConfirm(msg, onConfirm) {
+            const modal = document.getElementById('lspdConfirmModal');
+            document.getElementById('lspdConfirmText').innerText = msg;
+            modal.style.display = 'flex';
+            document.getElementById('lspdConfirmBtn').onclick = () => {
+                onConfirm();
+                closeConfirm();
+            };
+        }
+
+        function closeConfirm() {
+            document.getElementById('lspdConfirmModal').style.display = 'none';
+        }
+
+        window.onbeforeunload = function() {
+            if (activeTest) return "Test prebieha! Ak odídeš, výsledky sa neuložia.";
+        };
+
+        function showNotification(msg, type = 'success') {
+            const notify = document.getElementById('sysNotify');
+            document.getElementById('notifyMsg').innerText = msg;
+            notify.style.borderLeftColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            notify.classList.add('show');
+            setTimeout(() => notify.classList.remove('show'), 4000);
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('show'); }
+        function closeModal(id) { 
+            document.getElementById(id).classList.remove('show'); 
+        }
+
+        async function loginAdmin() {
+            const email = document.getElementById('adminEmailInput').value;
+            const password = document.getElementById('adminPassInput').value;
+            const { data, error } = await _db.auth.signInWithPassword({ email, password });
+            if (error) showNotification(error.message, "danger");
+            else { closeModal('loginModal'); checkUserStatus(); }
+        }
+
+        async function checkUserStatus() {
+            const { data: { session } } = await _db.auth.getSession();
+            if (session) {
+                document.getElementById('navLoginBtn').style.display = 'none';
+                document.getElementById('navLogoutBtn').style.display = 'block';
+                document.getElementById('mainView').style.display = 'block';
+                document.getElementById('lockScreen').style.display = 'none';
+                document.querySelectorAll('.hidden-content').forEach(el => el.style.display = 'block');
+            }
+        }
+
+        function checkAdminCode() {
+            const input = document.getElementById('adminCodeInput');
+            if(input.value === ADMIN_SECRET_CODE) {
+                input.value = "";
+                closeModal('adminCodeModal');
+                
+                document.getElementById('mainView').style.display = 'none';
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                
+                showNotification("ADMIN PRÍSTUP POVOLENÝ", "success");
+                renderAdminTestList();
+            } else {
+                document.getElementById('adminCodeModal').querySelector('.modal-card').classList.add('access-denied');
+                setTimeout(() => {
+                    document.getElementById('adminCodeModal').querySelector('.modal-card').classList.remove('access-denied');
+                }, 500);
+                showNotification("NESPRÁVNY KÓD", "danger");
+            }
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').style.display = 'none';
+            const mainView = document.getElementById('mainView');
+            mainView.style.display = 'block';
+            mainView.classList.add('fade-in');
+            renderCategories();
+            showTestsForCategory();
+        }
+
+        async function loadData() {
+            const { data } = await _db.from('lspd_testy').select('data').single();
+            if (data) { testData = data.data; renderCategories(); }
+            checkUserStatus();
+        }
+
+        function renderCategories() {
+            const options = '<option value="">-- VYBERTE SEKCIU --</option>' + 
+                testData.categories.map((c, i) => `<option value="${i}">${c.name.toUpperCase()}</option>`).join('');
+            document.getElementById('catSelectMain').innerHTML = options;
+            document.getElementById('adminCatSelect').innerHTML = options;
+        }
+
+        function showTestsForCategory() {
+            const idx = document.getElementById('catSelectMain').value;
+            const container = document.getElementById('testList');
+            container.innerHTML = "";
+            if(!idx) return;
+            testData.categories[idx].tests.forEach((t, i) => {
+                container.innerHTML += `
+                    <div class="test-card-link fade-in" onclick="preStartTest(${idx}, ${i})" style="animation-delay: ${i*0.1}s">
+                        <h2 style="color:var(--primary); margin:0;">${t.title}</h2>
+                        <p style="font-size:0.7rem; color:#888;">LIMIT: ${t.duration} | POKUSY: ${t.attempts}</p>
+                    </div>`;
+            });
+        }
+
+        // --- UPRAVENÉ ADMIN DELETE FUNCTIONS (POUŽÍVAJÚ NOVÉ MODAL OKNO) ---
+        function renderAdminTestList() {
+            const idx = document.getElementById('adminCatSelect').value;
+            const container = document.getElementById('adminExistingTests');
+            container.innerHTML = "";
+            if(!idx || !testData.categories[idx]) return;
+
+            testData.categories[idx].tests.forEach((t, i) => {
+                container.innerHTML += `
+                    <div class="admin-test-item fade-in">
+                        <span>${t.title}</span>
+                        <button class="btn" onclick="deleteTest(${idx}, ${i})" style="background:var(--danger); font-size: 0.6rem; padding: 5px 10px;">ZMAZAŤ TEST</button>
+                    </div>`;
+            });
+        }
+
+        async function deleteTest(catIdx, testIdx) {
+            openConfirm("Naozaj chcete vymazať tento test? Táto akcia je nevratná.", async () => {
+                testData.categories[catIdx].tests.splice(testIdx, 1);
+                await updateDB();
+                renderAdminTestList();
+                showNotification("TEST BOL ODSTRÁNENÝ", "danger");
+            });
+        }
+
+        async function deleteCategory() {
+            const idx = document.getElementById('adminCatSelect').value;
+            if(!idx) return showNotification("VYBERTE SEKCIU NA ZMAZANIE", "danger");
+            
+            openConfirm("VAROVANIE: Vymazaním sekcie odstránite aj VŠETKY TESTY, ktoré sa v nej nachádzajú!", async () => {
+                testData.categories.splice(idx, 1);
+                await updateDB();
+                renderCategories();
+                renderAdminTestList();
+                showNotification("SEKCIA BOLA ODSTRÁNENÁ", "danger");
+            });
+        }
+
+        async function updateDB() {
+            await _db.from('lspd_testy').upsert({ id: 1, data: testData });
+        }
+
+        // --- TEST EXECUTION ---
+        function preStartTest(cIdx, tIdx) {
+            selectedTestRef = { cIdx, tIdx };
+            const test = testData.categories[cIdx].tests[tIdx];
+            document.getElementById('modalTestTitle').innerText = test.title;
+            document.getElementById('modalTestInfo').innerText = `Čas: ${test.duration} | Max. pokusov: ${test.attempts}`;
+            openModal('testStartModal');
+        }
+
+        function confirmStartTest() {
+            const name = document.getElementById('userNameInput').value;
+            if(!name) return showNotification("ZADAJ MENO", "danger");
+            currentUser = name;
+            activeTest = testData.categories[selectedTestRef.cIdx].tests[selectedTestRef.tIdx];
+            
+            closeModal('testStartModal');
+            document.getElementById('mainNavbar').classList.add('locked-nav');
+            document.getElementById('mainView').style.display = 'none';
+            document.getElementById('testExecution').style.display = 'block';
+            
+            renderTest();
+            const parts = activeTest.duration.split(':');
+            const totalSec = (+parts[0]) * 3600 + (+parts[1]) * 60 + (+parts[2]);
+            startTimer(totalSec);
+        }
+
+        function renderTest() {
+            const cont = document.getElementById('testContent');
+            cont.innerHTML = `<h3>${activeTest.title}</h3><p>DÔSTOJNÍK: ${currentUser}</p><hr style="border-color:#222">`;
+            activeTest.questions.forEach((q, i) => {
+                let html = `<div class="fade-in" style="margin-bottom:20px; background:#050505; padding:20px; border-radius:5px; border: 1px solid #111; animation-delay: ${i*0.1}s">
+                    <p><strong>${i+1}. ${q.title}</strong></p>`;
+                if(q.type === 'text') html += `<textarea class="ans terminal-input" data-q="${q.title}" style="height:80px;"></textarea>`;
+                else q.options.forEach(opt => {
+                    html += `<label style="display:block; margin:8px 0; cursor:pointer;"><input type="radio" name="q${i}" class="ans-radio" value="${opt}" data-q="${q.title}"> ${opt}</label>`;
+                });
+                cont.innerHTML += html + `</div>`;
+            });
+        }
+
+        function startTimer(totalSeconds) {
+            timerInterval = setInterval(() => {
+                let h = Math.floor(totalSeconds / 3600), m = Math.floor((totalSeconds % 3600) / 60), s = totalSeconds % 60;
+                document.getElementById('timer').innerText = `ZOSTÁVAJÚCI ČAS: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if(totalSeconds-- <= 0) submitTest();
+            }, 1000);
+        }
+
+        async function submitTest() {
+            clearInterval(timerInterval);
+            let results = "";
+            document.querySelectorAll('.ans').forEach(el => results += `**${el.dataset.q}**: ${el.value}\n`);
+            document.querySelectorAll('.ans-radio:checked').forEach(el => results += `**${el.dataset.q}**: ${el.value}\n`);
+
+            await fetch(WEBHOOK, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    embeds: [{
+                        title: "VÝSLEDOK TESTU LSPD",
+                        color: 3447003,
+                        fields: [
+                            { name: "Meno", value: currentUser, inline: true },
+                            { name: "Test", value: activeTest.title, inline: true },
+                            { name: "Odpovede", value: results || "Prázdne" }
+                        ],
+                        timestamp: new Date()
+                    }]
+                })
+            });
+            activeTest = null;
+            showNotification("TEST ODOSLANÝ");
+            setTimeout(() => location.reload(), 2000);
+        }
+
+        // --- BUILDER FUNCTIONS ---
+        function addQuestion(type) {
+            const id = Date.now();
+            const html = `
+                <div class="form-builder-item fade-in" id="q_${id}" data-type="${type}" style="background:#000; padding:10px; margin-top:10px; border:1px solid #222; border-left: 3px solid var(--primary);">
+                    <input type="text" class="q-title terminal-input" placeholder="Otázka" style="font-size:0.8rem;">
+                    ${type === 'choice' ? `<textarea class="terminal-input q-options" placeholder="Možnosti (každá na nový riadok)" style="font-size:0.7rem; height:60px;"></textarea>` : ''}
+                    <button onclick="this.parentElement.remove()" style="color:var(--danger); background:none; border:none; cursor:pointer; font-size:0.7rem;">[ ODSTRÁNIŤ OTÁZKU ]</button>
+                </div>`;
+            document.getElementById('questionsBuilder').insertAdjacentHTML('beforeend', html);
+        }
+
+        async function saveTestToDB() {
+            const catIdx = document.getElementById('adminCatSelect').value;
+            const title = document.getElementById('testTitle').value;
+            if(!catIdx || !title) return showNotification("VYBERTE SEKCIU A NÁZOV", "danger");
+            
+            const questions = [];
+            document.querySelectorAll('.form-builder-item').forEach(el => {
+                questions.push({
+                    type: el.dataset.type,
+                    title: el.querySelector('.q-title').value,
+                    options: el.querySelector('.q-options')?.value.split('\n').filter(x => x.trim()) || []
+                });
+            });
+
+            testData.categories[catIdx].tests.push({
+                title: title,
+                duration: document.getElementById('testDuration').value,
+                attempts: document.getElementById('testAttempts').value,
+                questions: questions
+            });
+
+            await updateDB();
+            showNotification("TEST ULOŽENÝ");
+            document.getElementById('testTitle').value = "";
+            document.getElementById('questionsBuilder').innerHTML = "";
+            renderAdminTestList();
+        }
+
+        async function addCategory() {
+            const name = document.getElementById('newCatName').value;
+            if(!name) return showNotification("ZADAJTE NÁZOV", "danger");
+            testData.categories.push({ name, tests: [] });
+            await updateDB();
+            showNotification("SEKCIA VYTVORENÁ");
+            document.getElementById('newCatName').value = "";
+            renderCategories();
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
