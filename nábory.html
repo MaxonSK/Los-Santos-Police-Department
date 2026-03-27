@@ -246,6 +246,13 @@
         .error-overlay {
             background: rgba(255, 0, 0, 0.15) !important;
         }
+
+        /* --- NOVÝ ŠTÝL PRE ZATVORENÝ STATUS --- */
+        .status-badge.closed {
+            color: #ff4444 !important;
+            border: 1px solid #ff4444 !important;
+            text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
     </style>
 </head>
 <body class="fade-in-active">
@@ -268,7 +275,7 @@
 
 <div class="status-container">
     <span class="status-text">Status náborov:</span>
-    <span class="status-badge open">OTVORENÉ</span>
+    <span class="status-badge closed">ZATVORENÉ</span>
 </div>
 
 <div class="main-content">
